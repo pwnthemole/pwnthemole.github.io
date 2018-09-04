@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang }}">
+  {% include head.html %}
+    <body>
+      {% include header.html %}
+
+      <div class="container">
+        <small>{{ page.date | date: "%-d %B %Y" }}</small>
+          <h1>{{ page.title }}</h1>
+            <i><p class="view">by {{ page.author | default: site.author }}</p></i>
+
+              {{content}}
+
+              {% if page.tags != empty %}
+                <small>tags: {{ page.tags | array_to_sentence_string }}</small>
+              {% endif %}

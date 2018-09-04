@@ -1,1 +1,8 @@
 theme: jekyll-theme-hacker
+title: "pwnthem0le"
+description: >
+  pwnthem0le is a Turin-based, hacking students group born out of
+  CyberChallenge 2018.
+paginate: 5
+plugins:
+        - jekyll-paginate
