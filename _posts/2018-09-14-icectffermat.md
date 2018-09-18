@@ -1,8 +1,8 @@
 ---
-title: IceCTF 2018 - Fermat String Writeup
 layout: post
-author: "madt1m"
-tags: binary_exploitation icectf stack_pivoting 
+title: IceCTF 2018 - Fermat string Writeup
+author: madt1m
+tags: [binary-exploitation, writeup, icectf]
 ---
 
 # Does size matter?

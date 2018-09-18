@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=101116b7c6ea279bab03ed83b97a8aac66261c0c">
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Tokyo Westerns CTF 2018 - Revolutional Secure Angou Writeup | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="Tokyo Westerns CTF 2018 - Revolutional Secure Angou Writeup" />
+<meta name="author" content="mr96" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="We’re given a short Ruby code used to encrypt the flag, the public key and the encrypted flag. require &#39;openssl&#39; e = 65537 while true p = OpenSSL::BN.generate_prime(1024, false) q = OpenSSL::BN.new(e).mod_inverse(p) next unless q.prime? key = OpenSSL::PKey::RSA.new key.set_key(p.to_i * q.to_i, e, nil) File.write(&#39;publickey.pem&#39;, key.to_pem) File.binwrite(&#39;flag.encrypted&#39;, key.public_encrypt(File.binread(&#39;flag&#39;))) break end Code Analysis The code is a simple textbook RSA implementation, the only difference is that we have , and this is the vulnerability. Attack From we can write for some and then . So we have to find such ; rewriting we can see that . Because we have and running openssl rsa -pubin -in publickey.pem -text -noout we can see bits, so because bits also bits and . Now we only have to check the values of from to and then decrypt the flag (in less than 3 seconds with the following script). import gmpy2 from Crypto.PublicKey import RSA e = 65537L n = 16809924442712290290403972268146404729136337398387543585587922385691232205208904952456166894756423463681417301476531768597525526095592145907599331332888256802856883222089636138597763209373618772218321592840374842334044137335907260797472710869521753591357268215122104298868917562185292900513866206744431640042086483729385911318269030906569639399362889194207326479627835332258695805485714124959985930862377523511276514446771151440627624648692470758438999548140726103882523526460632932758848850419784646449190855119546581907152400013892131830430363417922752725911748860326944837167427691071306540321213837143845664837111L p = 0 for k in range(int(e/2),e): delta = 1+4*k*n*e if gmpy2.is_square(delta): y = gmpy2.isqrt(delta) if (y-1)%(2*k) == 0: p1 = (y-1)/(2*k) if n%p1 == 0: print(&quot;Found!&quot;) p = p1 break q = n/p phi = (p-1)*(q-1) d = gmpy2.invert(e,phi) key = RSA.construct((n,e,long(d))) data = open(&#39;revolutional-secure-angou/flag.encrypted&#39;, &#39;r&#39;).read() print(key.decrypt(data)) and we can find the flag TWCTF{9c10a83c122a9adfe6586f498655016d3267f195}" />
+<meta property="og:description" content="We’re given a short Ruby code used to encrypt the flag, the public key and the encrypted flag. require &#39;openssl&#39; e = 65537 while true p = OpenSSL::BN.generate_prime(1024, false) q = OpenSSL::BN.new(e).mod_inverse(p) next unless q.prime? key = OpenSSL::PKey::RSA.new key.set_key(p.to_i * q.to_i, e, nil) File.write(&#39;publickey.pem&#39;, key.to_pem) File.binwrite(&#39;flag.encrypted&#39;, key.public_encrypt(File.binread(&#39;flag&#39;))) break end Code Analysis The code is a simple textbook RSA implementation, the only difference is that we have , and this is the vulnerability. Attack From we can write for some and then . So we have to find such ; rewriting we can see that . Because we have and running openssl rsa -pubin -in publickey.pem -text -noout we can see bits, so because bits also bits and . Now we only have to check the values of from to and then decrypt the flag (in less than 3 seconds with the following script). import gmpy2 from Crypto.PublicKey import RSA e = 65537L n = 16809924442712290290403972268146404729136337398387543585587922385691232205208904952456166894756423463681417301476531768597525526095592145907599331332888256802856883222089636138597763209373618772218321592840374842334044137335907260797472710869521753591357268215122104298868917562185292900513866206744431640042086483729385911318269030906569639399362889194207326479627835332258695805485714124959985930862377523511276514446771151440627624648692470758438999548140726103882523526460632932758848850419784646449190855119546581907152400013892131830430363417922752725911748860326944837167427691071306540321213837143845664837111L p = 0 for k in range(int(e/2),e): delta = 1+4*k*n*e if gmpy2.is_square(delta): y = gmpy2.isqrt(delta) if (y-1)%(2*k) == 0: p1 = (y-1)/(2*k) if n%p1 == 0: print(&quot;Found!&quot;) p = p1 break q = n/p phi = (p-1)*(q-1) d = gmpy2.invert(e,phi) key = RSA.construct((n,e,long(d))) data = open(&#39;revolutional-secure-angou/flag.encrypted&#39;, &#39;r&#39;).read() print(key.decrypt(data)) and we can find the flag TWCTF{9c10a83c122a9adfe6586f498655016d3267f195}" />
+<link rel="canonical" href="http://localhost:4000/2018/09/17/tokyowesternsrevolutionalsecureangou.html" />
+<meta property="og:url" content="http://localhost:4000/2018/09/17/tokyowesternsrevolutionalsecureangou.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-09-17T00:00:00+02:00" />
+<script type="application/ld+json">
+{"description":"We’re given a short Ruby code used to encrypt the flag, the public key and the encrypted flag. require &#39;openssl&#39; e = 65537 while true p = OpenSSL::BN.generate_prime(1024, false) q = OpenSSL::BN.new(e).mod_inverse(p) next unless q.prime? key = OpenSSL::PKey::RSA.new key.set_key(p.to_i * q.to_i, e, nil) File.write(&#39;publickey.pem&#39;, key.to_pem) File.binwrite(&#39;flag.encrypted&#39;, key.public_encrypt(File.binread(&#39;flag&#39;))) break end Code Analysis The code is a simple textbook RSA implementation, the only difference is that we have , and this is the vulnerability. Attack From we can write for some and then . So we have to find such ; rewriting we can see that . Because we have and running openssl rsa -pubin -in publickey.pem -text -noout we can see bits, so because bits also bits and . Now we only have to check the values of from to and then decrypt the flag (in less than 3 seconds with the following script). import gmpy2 from Crypto.PublicKey import RSA e = 65537L n = 16809924442712290290403972268146404729136337398387543585587922385691232205208904952456166894756423463681417301476531768597525526095592145907599331332888256802856883222089636138597763209373618772218321592840374842334044137335907260797472710869521753591357268215122104298868917562185292900513866206744431640042086483729385911318269030906569639399362889194207326479627835332258695805485714124959985930862377523511276514446771151440627624648692470758438999548140726103882523526460632932758848850419784646449190855119546581907152400013892131830430363417922752725911748860326944837167427691071306540321213837143845664837111L p = 0 for k in range(int(e/2),e): delta = 1+4*k*n*e if gmpy2.is_square(delta): y = gmpy2.isqrt(delta) if (y-1)%(2*k) == 0: p1 = (y-1)/(2*k) if n%p1 == 0: print(&quot;Found!&quot;) p = p1 break q = n/p phi = (p-1)*(q-1) d = gmpy2.invert(e,phi) key = RSA.construct((n,e,long(d))) data = open(&#39;revolutional-secure-angou/flag.encrypted&#39;, &#39;r&#39;).read() print(key.decrypt(data)) and we can find the flag TWCTF{9c10a83c122a9adfe6586f498655016d3267f195}","author":{"@type":"Person","name":"mr96"},"@type":"BlogPosting","url":"http://localhost:4000/2018/09/17/tokyowesternsrevolutionalsecureangou.html","headline":"Tokyo Westerns CTF 2018 - Revolutional Secure Angou Writeup","dateModified":"2018-09-17T00:00:00+02:00","datePublished":"2018-09-17T00:00:00+02:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2018/09/17/tokyowesternsrevolutionalsecureangou.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <h1>pwnthem0le</h1>
+    <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018.
+</h2>
+    <section id="downloads">
+      <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>Our work on GitHub</a>
+    </section>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>17 September 2018</small>
+          <h1>Tokyo Westerns CTF 2018 - Revolutional Secure Angou Writeup</h1>
+            <i><p class="view">by mr96</p></i>
+
+              <p>We’re given a short Ruby code used to encrypt the flag, the public key and the encrypted flag.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>require 'openssl'
+
+e = 65537
+while true
+  p = OpenSSL::BN.generate_prime(1024, false)
+  q = OpenSSL::BN.new(e).mod_inverse(p)
+  next unless q.prime?
+  key = OpenSSL::PKey::RSA.new
+  key.set_key(p.to_i * q.to_i, e, nil)
+  File.write('publickey.pem', key.to_pem)
+  File.binwrite('flag.encrypted', key.public_encrypt(File.binread('flag')))
+  break
+end
+</code></pre></div></div>
+
+<h2 id="code-analysis">Code Analysis</h2>
+<p>The code is a simple textbook RSA implementation, the only difference is that we have <script type="math/tex">q \equiv e^{-1} \pmod{p}</script>, and this is the vulnerability.</p>
+
+<h2 id="attack">Attack</h2>
+<p>From <script type="math/tex">q \equiv e^{-1} \pmod{p}</script> we can write <script type="math/tex">qe=1+kp</script> for some <script type="math/tex">k \in \mathbb{Z}</script> and then <script type="math/tex">kp^2+p-ne=0</script>. So we have to find such <script type="math/tex">k</script>; rewriting <script type="math/tex">k = \frac{qe-1}{p}\sim\frac{q}{p}e</script> we can see that <script type="math/tex">k\in [\min{\frac{q}{p}e-1},\max{\frac{q}{p}e}]</script>. Because <script type="math/tex">q\in \mathbb{Z_p}</script> we have <script type="math/tex">% <![CDATA[
+\frac{q}{p}< 1 %]]></script> and running</p>
+
+<p><code class="highlighter-rouge">openssl rsa -pubin -in publickey.pem  -text -noout</code></p>
+
+<p>we can see <script type="math/tex">n\sim 2048</script> bits, so because <script type="math/tex">p\sim 1024</script> bits also <script type="math/tex">q\sim 1024</script> bits and <script type="math/tex">\frac{q}{p}\geq \frac{1}{2}</script>. Now we only have to check the values of <script type="math/tex">k</script> from <script type="math/tex">\frac{1}{2}e-1</script> to <script type="math/tex">e</script> and then decrypt the flag (in less than 3 seconds with the following script).</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import gmpy2
+from Crypto.PublicKey import RSA
+
+e = 65537L
+n = 16809924442712290290403972268146404729136337398387543585587922385691232205208904952456166894756423463681417301476531768597525526095592145907599331332888256802856883222089636138597763209373618772218321592840374842334044137335907260797472710869521753591357268215122104298868917562185292900513866206744431640042086483729385911318269030906569639399362889194207326479627835332258695805485714124959985930862377523511276514446771151440627624648692470758438999548140726103882523526460632932758848850419784646449190855119546581907152400013892131830430363417922752725911748860326944837167427691071306540321213837143845664837111L
+p = 0
+
+for k in range(int(e/2),e):
+    delta = 1+4*k*n*e
+    if gmpy2.is_square(delta):
+        y = gmpy2.isqrt(delta)
+        if (y-1)%(2*k) == 0:
+            p1 = (y-1)/(2*k)
+            if n%p1 == 0:
+                print("Found!")
+                p = p1
+                break
+
+q = n/p
+phi = (p-1)*(q-1)
+d = gmpy2.invert(e,phi)
+key = RSA.construct((n,e,long(d)))
+data = open('revolutional-secure-angou/flag.encrypted', 'r').read()
+print(key.decrypt(data))
+</code></pre></div></div>
+<p>and we can find the flag <code class="highlighter-rouge">TWCTF{9c10a83c122a9adfe6586f498655016d3267f195}</code></p>
+
+
+              
+                <small>tags: crypto and rsa</small>
+              
