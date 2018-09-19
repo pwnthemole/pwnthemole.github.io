@@ -5,8 +5,7 @@ author: madt1m
 tags: binary-exploitation writeup icectf
 ---
 
-## Introduzione
-
+## Tweeting Invaders
 Before diving into exploit and vulnerabilities, I'll take a little time to introduce the core concepts behind the challenge. The same key concepts which made this challenge so much fun, frustrating, and wait, did I say frustrating?
 
 The binary, _twitter_, was basically an emulator to ROMs from the past which the challenge provided us...Pong, Space Invaders and such, you know :)
