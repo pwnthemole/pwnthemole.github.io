@@ -3,6 +3,7 @@ title: "pwnthem0le"
 description: >
   pwnthem0le is a Turin-based, hacking students group born out of
   CyberChallenge 2018.
-paginate: 5
+paginate: 15
+paginate_path: "blog/page:num/"
 plugins:
         - jekyll-paginate

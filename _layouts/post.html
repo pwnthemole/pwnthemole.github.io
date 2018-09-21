@@ -12,5 +12,12 @@
               {{content}}
 
               {% if page.tags != empty %}
-                <small>tags: {{ page.tags | array_to_sentence_string }}</small>
+                <!--<small>tags: {{ page.tags | array_to_sentence_string }}</small> -->
+                <small>
+                  tags:
+                  {% for tag in page.tags %}
+                    {% capture tag_name %}{{ tag }}{% endcapture %}
+                    <a href="/tags/{{ tag_name }}"><code class="highligher-rouge"><nobr>{{ tag_name }}</nobr></code></a>&nbsp;
+                  {% endfor %}
+                </small>
               {% endif %}

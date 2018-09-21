@@ -3,6 +3,7 @@ title: Tokyo Westerns CTF 2018 - Revolutional Secure Angou Writeup
 layout: post
 author: "mr96"
 tags: crypto rsa
+category: crypto
 ---
 
 We're given a short Ruby code used to encrypt the flag, the public key and the encrypted flag.
