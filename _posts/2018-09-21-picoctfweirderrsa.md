@@ -3,6 +3,7 @@ title: picoCTF 2017 - weirderRSA
 layout: post
 author: "matpro98"
 tags: crypto rsa
+category: crypto
 ---
 
 We have the public key, which consist of $$n$$ and $$e$$, $$d_p=d \pmod{p-1}$$ and the encrypted flag $$c$$.
