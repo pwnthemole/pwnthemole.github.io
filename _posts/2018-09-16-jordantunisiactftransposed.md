@@ -2,6 +2,7 @@
 title: Jordan & Tunisia National CTF 2018 - Transposed Writeup
 layout: post
 author: "mr96"
+category: crypto
 tags: crypto classic-crypto permutations
 ---
 
