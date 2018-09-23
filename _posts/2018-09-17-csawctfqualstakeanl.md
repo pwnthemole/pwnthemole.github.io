@@ -2,6 +2,7 @@
 title: CSAW CTF Quals 2018 - Take an L Writeup
 layout: post
 author: "mr96"
+category: misc
 tags: misc math divide_et_impera
 ---
 
