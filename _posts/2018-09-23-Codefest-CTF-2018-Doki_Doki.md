@@ -2,7 +2,7 @@
 title:  Codefest CTF 2018 - Doki Doki
 layout: post
 author: "XxcoralloxX"
-tags: reverse
+tags: reverse CodefestCTF2018
 ---
 
 It was a simple reverse engineering challenge.
