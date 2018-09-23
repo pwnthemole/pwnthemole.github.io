@@ -2,14 +2,14 @@
 title:  Codefest CTF 2018 - Doki Doki
 layout: post
 author: "XxcoralloxX"
-tags: reverse windows
+tags: reverse
 ---
 
 It was a simple reverse engineering challenge.
 
 We need to provide 3 Keys in order to get the flag.
 
-My first try was to avoid all the "game over" skipping via gdb all the check functions, but the flag provided at the end wasn't correct, so it needs to be looked more carefully with IDA (or any disassembler).
+My first try was to avoid every "game over" skipping via gdb all the check functions, but the flag provided at the end wasn't correct, so it needs to be looked more carefully with IDA (or any disassembler).
 
 ## Nice to meet you Monika
 Monika, the main character of the story asks the first key.
