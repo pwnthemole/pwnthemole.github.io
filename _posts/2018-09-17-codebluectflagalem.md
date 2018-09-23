@@ -2,6 +2,7 @@
 title: Code Blue CTF 2018 - Lagalem Writeup
 layout: post
 author: "mr96"
+category: crypto
 tags: crypto elgamal
 ---
 
