@@ -3,6 +3,7 @@ title:  Codefest CTF 2018 - Doki Doki Writeup
 layout: post
 author: "XxcoralloxX"
 tags: reverse CodefestCTF2018
+category: reverse
 ---
 
 It was a simple reverse engineering challenge.
