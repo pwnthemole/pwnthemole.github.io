@@ -1,5 +1,5 @@
 ---
-title:  Codefest CTF 2018 - Doki Doki
+title:  Codefest CTF 2018 - Doki Doki Writeup
 layout: post
 author: "XxcoralloxX"
 tags: reverse CodefestCTF2018
