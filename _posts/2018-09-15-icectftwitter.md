@@ -2,6 +2,7 @@
 layout: post
 title: IceCTF 2018 - Twitter Writeup
 author: madt1m
+category: pwn
 tags: binary-exploitation writeup icectf
 ---
 
