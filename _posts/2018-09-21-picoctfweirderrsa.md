@@ -1,5 +1,5 @@
 ---
-title: picoCTF 2017 - weirderRSA
+title: picoCTF 2017 - weirderRSA Writeup
 layout: post
 author: "matpro98"
 tags: crypto rsa
