@@ -1,9 +1,14 @@
 <header>
   <div class="container">
-    <h1>{{ site.title | default: site.github.repository_name }}</h1>
-    <h2>{{ site.description | default: site.github.project_tagline }}</h2>
-    <section id="downloads">
-      <a href="{{ site.github.owner_url }}" class="btn btn-github"><span class="icon"></span>Our work on GitHub</a>
-    </section>
+    <center>
+      <h1>{{ site.title | default: site.github.repository_name }}</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="/join.html" class="btn btn-github">Join Us!</a>
+      </section>
+      <h2>{{ site.description | default: site.github.project_tagline }}</h2>
+    </center>
   </div>
 </header>
