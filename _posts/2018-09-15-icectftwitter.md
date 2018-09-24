@@ -17,9 +17,9 @@ And _twitter_ is just that, a Chip-8 interpreter written in c++ written by some 
 
 ![AltText1](/media/images/icectftwitter_1.JPG)
 
-So, to properly follow and reproduce the writeup, I'd encourage you to go and take a quick read of the [link-here] _Chip-8 Instruction Set_ -- I'll refer to that in what follows.
+So, to properly follow and reproduce the writeup, I'd encourage you to go and take a quick read of the [_Chip-8 Instruction Set_](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) -- I'll refer to that in what follows.
 
-Moreover, to successfully write my custom ROM and exploit the vulnerability I used [link here] _chipper_.
+Moreover, to successfully write my custom ROM and exploit the vulnerability I used [_chipper_](https://github.com/mwales/chip8/tree/master/chipper).
 
 ## Binary Analysis
 
