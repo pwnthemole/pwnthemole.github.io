@@ -3,7 +3,7 @@ layout: post
 title: DefCamp CTF Qualification 2018 - Broken TV Writeup
 author: matpro98
 category: misc
-tags: [steganography, D-CTF]
+tags: [steganography, D-CTF, misc]
 ---
 
 The challenge gives us this image:
