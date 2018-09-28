@@ -6,7 +6,7 @@ category: misc
 tags: [steganography, D-CTF]
 ---
 
-The challenge gives us this image, named "blur.png"
+The challenge gives us this image:
 
 ![AltText](/media/images/dctfbrokentv_1.png)
 
@@ -17,9 +17,9 @@ We start by isolating the display (in Python):
 ```
 from PIL import Image
 
-im=Image.open('blur.png')
+im=Image.open('dctfbrokentv_1.png')
 im=im.crop((446,330,1379,838))
-im.save('display.png')
+im.save('dctfbrokentv_2.png')
 ```
 
 The code returns this image:
