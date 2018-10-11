@@ -87,7 +87,7 @@ def solve():
 the function returns `9dc5616a9df448ce476be9d8dd638a9c`; calling the decryption function with this key and redirecting the result to a file gives a zip which, when extracted, gives a text file with the flag: `{FLG:Y0yNe3dT0goD33peR!}`
 
 # Crypto 2 - Something is missing (200 pt.)
-In this challenge we are only given a file, without any explanation. The file contains some encrypted data and, using hexeditor, we can see that there are a lot of zeros at the beginning of the file. After some time the organizers gave us an hint: the file is encrypted using RSA. Since we have no informations or public key we assume that the attack does not depend on the modulus: the simpler attack is supposing that the file has been encrypted with $e=3$ and a very large modulus, so taking the cube root will basically give us the flag.
+In this challenge we are only given a file, without any explanation. The file contains some encrypted data and, using hexeditor, we can see that there are a lot of zeros at the beginning of the file. After some time the organizers gave us an hint: the file is encrypted using RSA. Since we have no informations or public key we assume that the attack does not depend on the modulus: the simpler attack is supposing that the file has been encrypted with $$e=3$$ and a very large modulus, so taking the cube root will basically give us the flag.
 
 ```
 from Crypto.Util.number import bytes_to_long
