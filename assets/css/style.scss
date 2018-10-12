@@ -1,7 +1,7 @@
  ---
  ---
 
- @import "jekyll-theme-hacker";
+ @import {{ site.theme }};
  
  
  img {width: 100%; }
