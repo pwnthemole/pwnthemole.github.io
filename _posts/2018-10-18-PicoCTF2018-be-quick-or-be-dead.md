@@ -1,5 +1,5 @@
 ---
-title:  PicoCTF 2018 - be-quick-or-be-dead
+title:  PicoCTF 2018 - be-quick-or-be-dead WriteUp
 layout: post
 author: "XxcoralloxX"
 tags: reverse PicoCTF2018
