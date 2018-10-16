@@ -68,9 +68,10 @@ We could write our function to do it better, or we could ask to WolframAlpha.
 
 ![AltText](https://i.gyazo.com/827b1737e4372224ee4c4c1f35a87432.png)
 
-'''
+```
 fib(1015) = 59288416551943338727574080408572281287377451615227988184724603969919549034666922046325034891393072356252090591628758887874047734579886068667306295291967872198822088710569576575629665781687543564318377549435421485
-'''
+```
+
 At this point, the result would be stored into eax which is a 32-bit register, an int (in my architecture at least) is 32 bit too, so quickly have the right number and ignore the overflow, I just put that result in an int variable, and make it print.
 
 now we just want to patch the 
@@ -94,7 +95,7 @@ We need to reverse it.
 Luckily it is quite simple:
 
 in short, it does:
-'''
+```
 unsigned int calc(unsigned int x)
 {
     unsigned int v1; 
@@ -117,7 +118,7 @@ unsigned int calc(unsigned int x)
     }
     return v5;
 }
-'''
+```
 okay, again an exponential-recursive funciton, which has as input 19965h.
 
 no way it can't be solved in this way.
@@ -126,7 +127,7 @@ We just need to rewrite it in a linear-complexity. (dynamic programming if you w
 
 This was my implementation:
 
-'''
+```
 #define N 104806
 unsigned int v[N]={0};
 int main() {
@@ -147,7 +148,7 @@ int main() {
     }
     printf("%u",v[N-1]);
     return 0;
-'''
+```
 
 we take the result, keep only the lowers 16 bits, patch the program with:
 "MOV EAX,9E22C98Eh"
