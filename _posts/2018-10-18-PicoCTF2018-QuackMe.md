@@ -17,6 +17,7 @@ It reads the password form the user, and store in ebp+PASSWORD
 
 
 Here this password is used in a for loop.
+
 ![AltText](https://i.gyazo.com/e4da01e2e40def306c142949c5bf37d5.png)
 
 In particular, editing some names to make it more clear, and zooming in the interesting part:
@@ -24,9 +25,13 @@ In particular, editing some names to make it more clear, and zooming in the inte
 8048858h is a memory address called "sekrutBuffer" containing a string
 
 1 2 3) Put a char form sekrutBuffer[i] into ecx.
+
 4 5 6 7) Put a char from PASSWORD[i] into eax.
+
 8) a xor is performed between sekretBuffer[i] and PASSWORD[i].
+
 9) The resoult is moved into var_1D
+
 10 11 12 13 14) The resoult is compared with greetingMessage[i].
 
 ![AltText](https://i.gyazo.com/3dff6af752e54d5bf07ce5f36faf6204.png)
