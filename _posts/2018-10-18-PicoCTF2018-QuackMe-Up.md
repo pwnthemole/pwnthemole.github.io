@@ -1,5 +1,5 @@
 ---
-title: PicoCTF 2018 - QuackMe-Up
+title: PicoCTF 2018 - QuackMe-Up WriteUp
 layout: post
 author: "XxcoralloxX"
 tags: reverse PicoCTF2018
