@@ -1,5 +1,5 @@
 ---
-title: PicoCTF 2018 - Radix's Terminal
+title: PicoCTF 2018 - Radix's Terminal WriteUp
 layout: post
 author: "XxcoralloxX"
 tags: reverse PicoCTF2018
