@@ -1,5 +1,5 @@
 ---
-title: Cryptowars2018- 0e,5e,12e Writeup
+title: Cryptowars2018 - 0e,5e,12e Writeup
 layout: post
 author: "matpro98"
 category: crypto ecc Smart-ASS
