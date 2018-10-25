@@ -1,9 +1,9 @@
 ---
-title: picoCTF 2018 - script me Writeup
+title: picoCTF 2018 - Script Me Writeup
 layout: post
 author: "matpro98"
-category: coding
-tags: python regex pwntools
+category: misc
+tags: misc python regex pwntools
 ---
 
 We can connect to the challenge via the command `nc 2018shell2.picoctf.com 7866`, getting this:
