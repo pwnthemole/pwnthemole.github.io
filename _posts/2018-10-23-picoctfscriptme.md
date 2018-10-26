@@ -26,7 +26,7 @@ Let's start with a warmup.
 ()() + (()(())) = ???
 ```
 
-The brackets groups act like cells, and the bigger cell "eat" the smaller one. Understanding this, we can write a simple Python script which parses the expression, finds the answer and eventually prints the flag.
+The brackets groups act like cells, and the bigger cell "eats" the smaller one. Understanding this, we can write a simple Python script which parses the expression, finds the answer and eventually prints the flag.
 The code is this:
 
 ```
