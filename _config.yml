@@ -2,7 +2,7 @@ theme: jekyll-theme-hacker
 title: "pwnthem0le"
 description: >
   pwnthem0le is a Turin-based, hacking students group born out of
-  CyberChallenge 2018.
+  CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
 paginate: 15
 paginate_path: "blog/page:num/"
 plugins:

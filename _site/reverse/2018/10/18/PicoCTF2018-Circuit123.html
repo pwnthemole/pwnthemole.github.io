@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>PicoCTF 2018 - Circuit123 WriteUp | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="PicoCTF 2018 - Circuit123 WriteUp" />
+<meta name="author" content="XxcoralloxX" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Circuit123 In this python reverse challenge, we have a flag encoded in sha512 and we need to find the key thanks to a program which check the key before decrypting." />
+<meta property="og:description" content="Circuit123 In this python reverse challenge, we have a flag encoded in sha512 and we need to find the key thanks to a program which check the key before decrypting." />
+<link rel="canonical" href="http://localhost:4000/reverse/2018/10/18/PicoCTF2018-Circuit123.html" />
+<meta property="og:url" content="http://localhost:4000/reverse/2018/10/18/PicoCTF2018-Circuit123.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-10-18T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"Circuit123 In this python reverse challenge, we have a flag encoded in sha512 and we need to find the key thanks to a program which check the key before decrypting.","author":{"@type":"Person","name":"XxcoralloxX"},"@type":"BlogPosting","url":"http://localhost:4000/reverse/2018/10/18/PicoCTF2018-Circuit123.html","headline":"PicoCTF 2018 - Circuit123 WriteUp","dateModified":"2018-10-18T00:00:00-04:00","datePublished":"2018-10-18T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/reverse/2018/10/18/PicoCTF2018-Circuit123.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>18 October 2018</small>
+          <h1>PicoCTF 2018 - Circuit123 WriteUp</h1>
+            <i><p class="view">by XxcoralloxX</p></i>
+
+              <h2 id="circuit123">Circuit123</h2>
+<p>In this python reverse challenge, we have a flag encoded in sha512 and we need to find the key thanks to a program which check the key before decrypting.</p>
+
+<p>This check is the vulnerability.
+The program does that to verify “integrity” of the key, and we need to reverse it.</p>
+
+<p>The verify function transform the key into a binary number, reverse it, and used as input for a “simulated circuit”.
+If the output of the circuit has the right value, the key is considered good.</p>
+
+<p>This “right value”, the circuit and the encrypted flag are in a file called map2.txt
+Another file called map1.txt is provided to us with the right key to explore the decrypter.</p>
+
+<p>Here’s the code of the verify function.
+x it’s the key, chalbox it’s the content of the file.</p>
+
+<p>Chalbox is divided into:
+Lenght (of the key in bit)
+Gates, a list of logical gates (only or and xor)
+check, the value that the gate should give as output</p>
+
+<p>In line 8 the key is transformed into bit-sequence and reversed.
+then for every gate, a new “bit” it’s added to b[] which is a list containing every bit of the circuit.</p>
+
+<p><img src="https://i.gyazo.com/f908871963e6f8190dc1b834b61f4c9a.png" alt="AltText" /></p>
+
+<p>in line 23 we can see that it checks if the last bit of the circuit has a specific value (check[0] is an index, check[1] is a boolean, both taken from the file).</p>
+
+<h2 id="ok-whats-the-point">Ok, what’s the point?</h2>
+
+<p>The key it’s something like a 128-bit input for this simulated circuit, which has to provide a well know output (0 in the case of map2.txt).
+We need to reverse the circuit to get what’s the right key.</p>
+
+<p>The file was too hard to read, so I used that verify function to make things easier.
+Basically, I modify it a bit to make it print all the circuit:</p>
+
+<p><img src="https://i.gyazo.com/301fa0ba99d66deb1e450a322aebdd80.png" alt="AltText" /></p>
+
+<p>A pice of output:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>v[128]=1
+v[129]=(v[0] XOR False) XOR (v[64] XOR False)
+v[130]=(v[129] XOR False) XOR (v[128] XOR True)
+v[131]=(v[64] XOR True) OR (v[128] XOR False)
+v[132]=(v[0] XOR True) OR (v[128] XOR False)
+...
+v[1138]=(v[1122] XOR False) OR (v[1137] XOR False)
+v[1139]=(v[1107] XOR False) OR (v[1138] XOR False)
+v[1140]=(v[1076] XOR False) OR (v[1139] XOR False)
+</code></pre></div></div>
+
+<p>Remember that v[0:127] are the input of the circuit.
+Debbugging we can also see that v[1140]^1 has to be == 1 (Line 25, since check[0] =1140 and check[1]=true for the map2.txt file).</p>
+
+<p>Form this information we can deduce that v[1140]=0.
+And now we should backtrack all the circuit.</p>
+
+<h2 id="z3-gets-handy">Z3 gets handy</h2>
+
+<p>I used a poorly written z3 script in order to do this.
+First, I rewrote one last time the script, to make it print gates in z3 syntax.</p>
+
+<p><img src="https://i.gyazo.com/4aed7b046439a98d6a499cee5f845083.png" alt="AltText" /></p>
+
+<p>Thanks to this output I made this simple z3 script:</p>
+
+<p>https://github.com/pwnthemole/ctfs/blob/master/PicoCTF2018-Circuit123/circuit.smt2</p>
+
+<p>which produce a badly formatted result, here is a pice:</p>
+
+<p><img src="https://i.gyazo.com/ea788f49a313046c74dc0792d4f8425f.png" alt="AltText" /></p>
+
+<p>(it basically says for every index the boolean value).</p>
+
+<p>Scripting a bit to traduce that in bit (and reversing) we get</p>
+
+<p>“10100101000110110111010001001010000101101110111001000110010101111001011011101111101000101010111101001110000110110011001011001101”
+which is the key in binary</p>
+
+<p><img src="https://i.gyazo.com/5ef18489f2f7e685cff8b8d963bd8f47.png" alt="AltText" /></p>
+
+<p>This was a nice first approach to z3 to me.</p>
+
+<p>XxcoralloxX</p>
+
+
+              
+                <!--<small>tags: reverse, z3, python, and PicoCTF2018</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/reverse"><code class="highligher-rouge"><nobr>reverse</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/z3"><code class="highligher-rouge"><nobr>z3</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/python"><code class="highligher-rouge"><nobr>python</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/PicoCTF2018"><code class="highligher-rouge"><nobr>PicoCTF2018</nobr></code></a>&nbsp;
+                  
+                </small>
+              

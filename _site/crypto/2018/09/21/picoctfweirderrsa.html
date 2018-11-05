@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>picoCTF 2017 - weirderRSA Writeup | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="picoCTF 2017 - weirderRSA Writeup" />
+<meta name="author" content="matpro98" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="We have the public key, which consist of and , and the encrypted flag . ``` e = 65537 n = 352758655756163603130656475864162239004344663459120398951306959672239055329877644796995008368282924624780849432051543118959312685532106237568240835778731486989439626252834661294225426875963944816709371554839452465119058016363040631618359944564550348310851045841670935254841385590882490443247265126417117450357 dp = 13530055667815347122266109008252377134325151556131892235929064596659462917644020624855537451062167377041847601387880412738836767351591511886432133011921729" />
+<meta property="og:description" content="We have the public key, which consist of and , and the encrypted flag . ``` e = 65537 n = 352758655756163603130656475864162239004344663459120398951306959672239055329877644796995008368282924624780849432051543118959312685532106237568240835778731486989439626252834661294225426875963944816709371554839452465119058016363040631618359944564550348310851045841670935254841385590882490443247265126417117450357 dp = 13530055667815347122266109008252377134325151556131892235929064596659462917644020624855537451062167377041847601387880412738836767351591511886432133011921729" />
+<link rel="canonical" href="http://localhost:4000/crypto/2018/09/21/picoctfweirderrsa.html" />
+<meta property="og:url" content="http://localhost:4000/crypto/2018/09/21/picoctfweirderrsa.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-09-21T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"We have the public key, which consist of and , and the encrypted flag . ``` e = 65537 n = 352758655756163603130656475864162239004344663459120398951306959672239055329877644796995008368282924624780849432051543118959312685532106237568240835778731486989439626252834661294225426875963944816709371554839452465119058016363040631618359944564550348310851045841670935254841385590882490443247265126417117450357 dp = 13530055667815347122266109008252377134325151556131892235929064596659462917644020624855537451062167377041847601387880412738836767351591511886432133011921729","author":{"@type":"Person","name":"matpro98"},"@type":"BlogPosting","url":"http://localhost:4000/crypto/2018/09/21/picoctfweirderrsa.html","headline":"picoCTF 2017 - weirderRSA Writeup","dateModified":"2018-09-21T00:00:00-04:00","datePublished":"2018-09-21T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/crypto/2018/09/21/picoctfweirderrsa.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>21 September 2018</small>
+          <h1>picoCTF 2017 - weirderRSA Writeup</h1>
+            <i><p class="view">by matpro98</p></i>
+
+              <p>We have the public key, which consist of <script type="math/tex">n</script> and <script type="math/tex">e</script>, <script type="math/tex">d_p=d \pmod{p-1}</script> and the encrypted flag <script type="math/tex">c</script>.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>e = 65537
+n = 352758655756163603130656475864162239004344663459120398951306959672239055329877644796995008368282924624780849432051543118959312685532106237568240835778731486989439626252834661294225426875963944816709371554839452465119058016363040631618359944564550348310851045841670935254841385590882490443247265126417117450357
+dp = 13530055667815347122266109008252377134325151556131892235929064596659462917644020624855537451062167377041847601387880412738836767351591511886432133011921729
+
+c = 23428056833770750219439218340180501853506449797628734848807388355447212714387039203998085387476974936419607861041793755542930286287098871510394661091846780839592290953853536571372997807697657464569729651718518301857979495046280018444198435962234642736892075369840282923945267377104440625478468507147243879631
+</code></pre></div></div>
+
+<h2 id="understanding-the-hint">Understanding the hint</h2>
+<p>The hint given is to find a multiple of <script type="math/tex">p</script>. Since in RSA <script type="math/tex">d \cdot e \equiv 1 \pmod{\varphi(n)}</script>, we have <script type="math/tex">d \cdot e \equiv 1 \pmod{(p-1)(q-1)}</script>, <script type="math/tex">d \cdot e \equiv 1 \pmod{p-1}</script>, <script type="math/tex">d \pmod{p-1} \cdot e \equiv 1 \pmod{p-1}</script>, <script type="math/tex">d_p \cdot e=1 \pmod{p-1}</script>. Thus there exist <script type="math/tex">k \in \mathbb{Z}</script> such that <script type="math/tex">d_p \cdot e=1+k(p-1);\ p=\dfrac{d_p \cdot e -1}{k}+1</script>.
+From <script type="math/tex">d_p=d \pmod{p-1}</script> we have <script type="math/tex">% <![CDATA[
+d_p < p-1 %]]></script> and then <script type="math/tex">% <![CDATA[
+d_p \cdot e=65537 \cdot d_p < 65537 (p-1) %]]></script>; so <script type="math/tex">% <![CDATA[
+k < 65537 %]]></script>, a reasonable value to bruteforce such <script type="math/tex">k</script> keeping in mind that <script type="math/tex">p</script> should be an integer that divides <script type="math/tex">n</script>.</p>
+
+<h2 id="attack">Attack</h2>
+<p>Using Python, the gmpy2 library is useful to compute the modular multiplicative inverse. The code is very simple:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import gmpy2
+e=65537
+n=352758655756163603130656475864162239004344663459120398951306959672239055329877644796995008368282924624780849432051543118959312685532106237568240835778731486989439626252834661294225426875963944816709371554839452465119058016363040631618359944564550348310851045841670935254841385590882490443247265126417117450357
+dp=13530055667815347122266109008252377134325151556131892235929064596659462917644020624855537451062167377041847601387880412738836767351591511886432133011921729
+c=23428056833770750219439218340180501853506449797628734848807388355447212714387039203998085387476974936419607861041793755542930286287098871510394661091846780839592290953853536571372997807697657464569729651718518301857979495046280018444198435962234642736892075369840282923945267377104440625478468507147243879631
+
+stuff=dp*e-1
+for k in range(1,e):
+    if stuff%k==0:  #p should be an integer
+        p1=stuff//k+1
+        if n%p1==0: #p should divide n
+            p=p1
+q=n//p
+phi=(p-1)*(q-1)
+d=gmpy2.invert(e,phi)
+m=pow(c,d,n)
+print(bytes.fromhex(hex(pow(c,d,n))[2:]))
+</code></pre></div></div>
+<p>and returns the flag <code class="highlighter-rouge">flag{wow_leaking_dp_breaks_rsa?_47413771836}</code></p>
+
+
+              
+                <!--<small>tags: crypto and rsa</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/crypto"><code class="highligher-rouge"><nobr>crypto</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/rsa"><code class="highligher-rouge"><nobr>rsa</nobr></code></a>&nbsp;
+                  
+                </small>
+              

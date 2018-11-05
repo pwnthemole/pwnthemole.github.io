@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>PicoCTF 2018 - QuackMe WriteUp | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="PicoCTF 2018 - QuackMe WriteUp" />
+<meta name="author" content="XxcoralloxX" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more about us and how to join us!" />
+<meta property="og:description" content="pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more about us and how to join us!" />
+<link rel="canonical" href="http://localhost:4000/reverse/2018/10/18/PicoCTF2018-QuackMe.html" />
+<meta property="og:url" content="http://localhost:4000/reverse/2018/10/18/PicoCTF2018-QuackMe.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-10-18T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more about us and how to join us!","author":{"@type":"Person","name":"XxcoralloxX"},"@type":"BlogPosting","url":"http://localhost:4000/reverse/2018/10/18/PicoCTF2018-QuackMe.html","headline":"PicoCTF 2018 - QuackMe WriteUp","dateModified":"2018-10-18T00:00:00-04:00","datePublished":"2018-10-18T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/reverse/2018/10/18/PicoCTF2018-QuackMe.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>18 October 2018</small>
+          <h1>PicoCTF 2018 - QuackMe WriteUp</h1>
+            <i><p class="view">by XxcoralloxX</p></i>
+
+              <p><img src="https://i.gyazo.com/176839a2109cb31b08b8e1383cbadc2d.png" alt="AltText" /></p>
+
+<p>This is an easy reverse challenge.
+The program just wants a “password”.</p>
+
+<p>Looking with ida we see a “doMagic” function
+It reads the password form the user, and store in ebp+PASSWORD
+<img src="https://i.gyazo.com/d60789089c96442f721b71bb55afe405.png" alt="AltText" /></p>
+
+<p>Here this password is used in a for loop.</p>
+
+<p><img src="https://i.gyazo.com/e4da01e2e40def306c142949c5bf37d5.png" alt="AltText" /></p>
+
+<p>In particular, editing some names to make it more clear, and zooming in the interesting part:</p>
+
+<p>8048858h is a memory address called “sekrutBuffer” containing a string</p>
+
+<p>1 2 3) Put a char form sekrutBuffer[i] into ecx.</p>
+
+<p>4 5 6 7) Put a char from PASSWORD[i] into eax.</p>
+
+<p>8) a xor is performed between sekretBuffer[i] and PASSWORD[i].</p>
+
+<p>9) The resoult is moved into var_1D</p>
+
+<p>10 11 12 13 14) The resoult is compared with greetingMessage[i].</p>
+
+<p><img src="https://i.gyazo.com/3dff6af752e54d5bf07ce5f36faf6204.png" alt="AltText" /></p>
+
+<p>It is quite simple.
+So, if Password[i]^sekrutBuffer[i] has to bee equal to greetingMessage[i]
+we can get Password reversing the process.
+password[i]=sekrutBuffer[i]^greetingMessage[i].</p>
+
+<p><img src="https://i.gyazo.com/1b94cef774dfee4bdcf6f1bce4b87cfe.png" alt="AltText" /></p>
+
+<p>And that’s it
+picoCTF{qu4ckm3_5f8d9**7}</p>
+
+
+              
+                <!--<small>tags: reverse and PicoCTF2018</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/reverse"><code class="highligher-rouge"><nobr>reverse</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/PicoCTF2018"><code class="highligher-rouge"><nobr>PicoCTF2018</nobr></code></a>&nbsp;
+                  
+                </small>
+              

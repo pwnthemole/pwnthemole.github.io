@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Codefest CTF 2018 - Doki Doki Writeup | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="Codefest CTF 2018 - Doki Doki Writeup" />
+<meta name="author" content="XxcoralloxX" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="It was a simple reverse engineering challenge." />
+<meta property="og:description" content="It was a simple reverse engineering challenge." />
+<link rel="canonical" href="http://localhost:4000/reverse/2018/09/23/Codefest-CTF-2018-Doki_Doki.html" />
+<meta property="og:url" content="http://localhost:4000/reverse/2018/09/23/Codefest-CTF-2018-Doki_Doki.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-09-23T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"It was a simple reverse engineering challenge.","author":{"@type":"Person","name":"XxcoralloxX"},"@type":"BlogPosting","url":"http://localhost:4000/reverse/2018/09/23/Codefest-CTF-2018-Doki_Doki.html","headline":"Codefest CTF 2018 - Doki Doki Writeup","dateModified":"2018-09-23T00:00:00-04:00","datePublished":"2018-09-23T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/reverse/2018/09/23/Codefest-CTF-2018-Doki_Doki.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>23 September 2018</small>
+          <h1>Codefest CTF 2018 - Doki Doki Writeup</h1>
+            <i><p class="view">by XxcoralloxX</p></i>
+
+              <p>It was a simple reverse engineering challenge.</p>
+
+<p>We need to provide 3 Keys in order to get the flag.</p>
+
+<p>My first try was to avoid every “game over” skipping via gdb all the check functions, but the flag provided at the end wasn’t correct, so it needs to be looked more carefully with IDA (or any disassembler).</p>
+
+<h2 id="nice-to-meet-you-monika">Nice to meet you Monika</h2>
+<p>Monika, the main character of the story asks the first key.
+On the right, we can see a loop until the user inserts the string, on the left the call at the function “checkPoem” 
+<img src="https://i.gyazo.com/1cd52d7a2215be80e94025251d59511f.png" alt="AltText" /></p>
+
+<hr />
+
+<h3 id="check-1">Check 1</h3>
+<p>Let’s have a look,
+It’s easy to see that there is a string in the variable “aMyHeadIsAHiveF” moved from memory and a strcmp.
+checking that variable we found “My head is a hive full of words that won’t settle”, the first key.
+After the check we see also some character moved into a variable “flg”, basically, after every check, some chars are added into the flag.</p>
+
+<p><img src="https://i.gyazo.com/11148cb9f185e509000f4f190e768868.png" alt="AltText" /></p>
+
+<hr />
+
+<h3 id="check-2">Check 2</h3>
+<p>The second check is made by the function “checkHiddenMeaning”
+Here we see that this is a wrapper. the check function is: “findHidden”, 
+but we can also see a for loop which edit some chars of the flag, and after that, 3 more chars are edited.
+The good news is that the key isn’t used at all, so we can just patch the program in order to make writing the flag even if the key is wrong. 
+btw findHidden is like a checksum of the key, no need to waste time on it since it doesn’t touch the flag.</p>
+
+<p><img src="https://i.gyazo.com/24c522a2a77eb80733d1e2513e9a97d4.png" alt="AltText" /></p>
+
+<hr />
+
+<h3 id="check-3">Check 3</h3>
+<p>Last check key is “posterTitle”.
+A first loop, edit the first 4 chars of the key.</p>
+
+<p><img src="https://i.gyazo.com/a83c861308044403974839c4869146ee.png" alt="AltText" /></p>
+
+<p>Then we have another loop which calls 4 thread running the “checkTitle” function.</p>
+
+<p><img src="https://i.gyazo.com/813af48bb8859e34cc8ea23859360444.png" alt="AltText" /></p>
+
+<hr />
+
+<p>checkTitle was quite hard to follow, a vector of functions was called, but hard to say what those functions do.
+But there’s also a doSomething function, more readable</p>
+
+<p>As we can see here a fixed seed is given to the srandom function, then in the for, rand() is called, the number is manipulated, and at the end, a mov put a char into the flag.
+We also see a string conteining several characters inside, so probably what happen is</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>srandom(seed);
+for(i=6;i&lt;12;i++){
+	 falg[i]=string[rand()]
+	}
+</code></pre></div></div>
+
+<p><img src="https://i.gyazo.com/38d7ef6cdaed8d5f1b9629d80d7a00aa.png" alt="AltText" /></p>
+
+<hr />
+
+<p>Maybe this means that even in this case the flag does not depend from the key?
+(Spoiler, yes.. luckily)
+Let’s go back to the checkTitle and delete all the call to function except for the doSomething, otherwise, they cause the program to stop if the key isn’t correct.</p>
+
+<p>Good. The last problem was the function “wrapUp” which call the “endlessTalk” if the Access function doesn’t return the right value, I just patched the jump to avoid the problem.</p>
+
+<p><img src="https://i.gyazo.com/83a341882f32a36087833da4c4160fd4.png" alt="AltText" /></p>
+
+<p>And here we are, just apply all the edits and run the program to get the correct flag.</p>
+
+<hr />
+
+<p>XxcoralloxX</p>
+
+
+              
+                <!--<small>tags: reverse and CodefestCTF2018</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/reverse"><code class="highligher-rouge"><nobr>reverse</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/CodefestCTF2018"><code class="highligher-rouge"><nobr>CodefestCTF2018</nobr></code></a>&nbsp;
+                  
+                </small>
+              

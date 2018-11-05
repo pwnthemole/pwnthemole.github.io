@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Reply CTF 2018 - Crypto1 &amp; Crypto2 Writeup | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="Reply CTF 2018 - Crypto1 &amp; Crypto2 Writeup" />
+<meta name="author" content="mr96" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Crypto1 - RoXor (100 pt.) We’re given a Python code and a file TOP_secret.zip.enc #!/usr/bin/python2.7 import hashlib, base64, sys def decriptMe(): with open(&quot;TOP_secret.zip.enc&quot;) as f: return f.read() def encryptionKey(k): m = hashlib.md5() m.update(k) key = m.hexdigest() return key def decryption(key, cyphertext): plaintext = &quot;&quot; k = 0 for i in base64.b64decode(cyphertext): p = ord(key[k]) ^ ord(i) plaintext = plaintext + chr(p) key += chr(p) k += 1 return plaintext def encryption(plaintext): key = encryptionKey(&quot;key&quot;) print &quot;[*] Key: {}\n[*] Plaintext: {}&quot;.format(key, str(len(plaintext))) cyphertext = &quot;&quot; for i in xrange(len(plaintext)): c = (ord(key[i]) ^ ord(plaintext[i])) cyphertext = cyphertext + chr(c) key += plaintext[i] return base64.b64encode(cyphertext) def check(plaintext): if plaintext[-65:] == &quot;6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e\n&quot;: return True return False def main(key): enkey = encryptionKey(key) print &quot;[*] Key Encrypted: %s&quot; % (enkey) plaintext = decryption(enkey, decriptMe()) print plaintext[-65:] if check(plaintext): print &quot;[*] Key Correct! Plaintext:\n %s&quot; % (plaintext) if __name__==&quot;__main__&quot;: if len(sys.argv) != 2: print &#39;Give me the key\n Example: %s key&#39; % (sys.argv[0]) exit(1) main(sys.argv[1]) Code Analysis The function decriptMe simply opens the encrypted file and return its content. The function encryptionKey generates the md5 hash of the key k given in input. The function decryption, given a key and the ciphertext, gives back the plaintext. Observe that every recovered character is added at the end of the key and is reused 32 charaters later. Noticed this, the decryption process is a simple xor, as the title of the challenge suggests. The function encryption does exactly what it is supposed to do. The only interesting part is that it uses as a key the md5 hash of the real key, then the process is the same as the decryption one. The function check checks if the file has been decrypted correctly, comparing the last 65 bytes with the last 65 bytes of the real file (as a string in the source). Here is the weakness of the cryptosystem. Attack What we have to do now is to reconstruct the original file starting from the last 65 bytes and knowing that part of these bytes are also in the key so, basically, we have to do in reverse the encryption process: def solve(): cipher = b64decode(decriptMe()) plaintext = &quot;6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e\n&quot; key = &quot;6c81d06ac6d2709a81f76a9bf6c3f5933&quot; for i in cipher[:-len(key)]: p = ord(plaintext[-len(key)-1]) ^ ord(cipher[-len(key)-1]) plaintext = chr(p) + plaintext key = chr(p) + key return key[:32] the function returns 9dc5616a9df448ce476be9d8dd638a9c; calling the decryption function with this key and redirecting the result to a file gives a zip which, when extracted, gives a text file with the flag: {FLG:Y0yNe3dT0goD33peR!} Crypto 2 - Something is missing (200 pt.) In this challenge we are only given a file, without any explanation. The file contains some encrypted data and, using hexeditor, we can see that there are a lot of zeros at the beginning of the file. After some time the organizers gave us an hint: the file is encrypted using RSA. Since we have no informations or public key we assume that the attack does not depend on the modulus: the simpler attack is supposing that the file has been encrypted with and a very large modulus, so taking the cube root will basically give us the flag. from Crypto.Util.number import bytes_to_long from binascii import unhexlify def long_to_bytes (val, endianness=&#39;big&#39;): width = val.bit_length() width += 8 - ((width % 8) or 8) fmt = &#39;%%0%dx&#39; % (width // 4) s = unhexlify(fmt % val) if endianness == &#39;little&#39;: s = s[::-1] return s def cube_root(n): lo = 0 hi = n while lo &lt; hi: mid = (lo + hi) // 2 if mid**3 &lt; n: lo = mid + 1 else: hi = mid return lo r = open(&quot;encrypted&quot;, &quot;r&quot;).read() r_num = bytes_to_long(r) sqrt3 = cube_root(r_num) print(long_to_bytes(sqrt3)) The script returns }!Erc33Qre0Z:TYS{ :ryvs CVM rug ebs qrra hbl qebjffnc rug fv fvuG: reverting the string and decrypting with rot-13 gives the flag {FLG:M0reD33peR!}." />
+<meta property="og:description" content="Crypto1 - RoXor (100 pt.) We’re given a Python code and a file TOP_secret.zip.enc #!/usr/bin/python2.7 import hashlib, base64, sys def decriptMe(): with open(&quot;TOP_secret.zip.enc&quot;) as f: return f.read() def encryptionKey(k): m = hashlib.md5() m.update(k) key = m.hexdigest() return key def decryption(key, cyphertext): plaintext = &quot;&quot; k = 0 for i in base64.b64decode(cyphertext): p = ord(key[k]) ^ ord(i) plaintext = plaintext + chr(p) key += chr(p) k += 1 return plaintext def encryption(plaintext): key = encryptionKey(&quot;key&quot;) print &quot;[*] Key: {}\n[*] Plaintext: {}&quot;.format(key, str(len(plaintext))) cyphertext = &quot;&quot; for i in xrange(len(plaintext)): c = (ord(key[i]) ^ ord(plaintext[i])) cyphertext = cyphertext + chr(c) key += plaintext[i] return base64.b64encode(cyphertext) def check(plaintext): if plaintext[-65:] == &quot;6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e\n&quot;: return True return False def main(key): enkey = encryptionKey(key) print &quot;[*] Key Encrypted: %s&quot; % (enkey) plaintext = decryption(enkey, decriptMe()) print plaintext[-65:] if check(plaintext): print &quot;[*] Key Correct! Plaintext:\n %s&quot; % (plaintext) if __name__==&quot;__main__&quot;: if len(sys.argv) != 2: print &#39;Give me the key\n Example: %s key&#39; % (sys.argv[0]) exit(1) main(sys.argv[1]) Code Analysis The function decriptMe simply opens the encrypted file and return its content. The function encryptionKey generates the md5 hash of the key k given in input. The function decryption, given a key and the ciphertext, gives back the plaintext. Observe that every recovered character is added at the end of the key and is reused 32 charaters later. Noticed this, the decryption process is a simple xor, as the title of the challenge suggests. The function encryption does exactly what it is supposed to do. The only interesting part is that it uses as a key the md5 hash of the real key, then the process is the same as the decryption one. The function check checks if the file has been decrypted correctly, comparing the last 65 bytes with the last 65 bytes of the real file (as a string in the source). Here is the weakness of the cryptosystem. Attack What we have to do now is to reconstruct the original file starting from the last 65 bytes and knowing that part of these bytes are also in the key so, basically, we have to do in reverse the encryption process: def solve(): cipher = b64decode(decriptMe()) plaintext = &quot;6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e\n&quot; key = &quot;6c81d06ac6d2709a81f76a9bf6c3f5933&quot; for i in cipher[:-len(key)]: p = ord(plaintext[-len(key)-1]) ^ ord(cipher[-len(key)-1]) plaintext = chr(p) + plaintext key = chr(p) + key return key[:32] the function returns 9dc5616a9df448ce476be9d8dd638a9c; calling the decryption function with this key and redirecting the result to a file gives a zip which, when extracted, gives a text file with the flag: {FLG:Y0yNe3dT0goD33peR!} Crypto 2 - Something is missing (200 pt.) In this challenge we are only given a file, without any explanation. The file contains some encrypted data and, using hexeditor, we can see that there are a lot of zeros at the beginning of the file. After some time the organizers gave us an hint: the file is encrypted using RSA. Since we have no informations or public key we assume that the attack does not depend on the modulus: the simpler attack is supposing that the file has been encrypted with and a very large modulus, so taking the cube root will basically give us the flag. from Crypto.Util.number import bytes_to_long from binascii import unhexlify def long_to_bytes (val, endianness=&#39;big&#39;): width = val.bit_length() width += 8 - ((width % 8) or 8) fmt = &#39;%%0%dx&#39; % (width // 4) s = unhexlify(fmt % val) if endianness == &#39;little&#39;: s = s[::-1] return s def cube_root(n): lo = 0 hi = n while lo &lt; hi: mid = (lo + hi) // 2 if mid**3 &lt; n: lo = mid + 1 else: hi = mid return lo r = open(&quot;encrypted&quot;, &quot;r&quot;).read() r_num = bytes_to_long(r) sqrt3 = cube_root(r_num) print(long_to_bytes(sqrt3)) The script returns }!Erc33Qre0Z:TYS{ :ryvs CVM rug ebs qrra hbl qebjffnc rug fv fvuG: reverting the string and decrypting with rot-13 gives the flag {FLG:M0reD33peR!}." />
+<link rel="canonical" href="http://localhost:4000/crypto/2018/10/09/replyctfcrypto12.html" />
+<meta property="og:url" content="http://localhost:4000/crypto/2018/10/09/replyctfcrypto12.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-10-09T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"Crypto1 - RoXor (100 pt.) We’re given a Python code and a file TOP_secret.zip.enc #!/usr/bin/python2.7 import hashlib, base64, sys def decriptMe(): with open(&quot;TOP_secret.zip.enc&quot;) as f: return f.read() def encryptionKey(k): m = hashlib.md5() m.update(k) key = m.hexdigest() return key def decryption(key, cyphertext): plaintext = &quot;&quot; k = 0 for i in base64.b64decode(cyphertext): p = ord(key[k]) ^ ord(i) plaintext = plaintext + chr(p) key += chr(p) k += 1 return plaintext def encryption(plaintext): key = encryptionKey(&quot;key&quot;) print &quot;[*] Key: {}\\n[*] Plaintext: {}&quot;.format(key, str(len(plaintext))) cyphertext = &quot;&quot; for i in xrange(len(plaintext)): c = (ord(key[i]) ^ ord(plaintext[i])) cyphertext = cyphertext + chr(c) key += plaintext[i] return base64.b64encode(cyphertext) def check(plaintext): if plaintext[-65:] == &quot;6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e\\n&quot;: return True return False def main(key): enkey = encryptionKey(key) print &quot;[*] Key Encrypted: %s&quot; % (enkey) plaintext = decryption(enkey, decriptMe()) print plaintext[-65:] if check(plaintext): print &quot;[*] Key Correct! Plaintext:\\n %s&quot; % (plaintext) if __name__==&quot;__main__&quot;: if len(sys.argv) != 2: print &#39;Give me the key\\n Example: %s key&#39; % (sys.argv[0]) exit(1) main(sys.argv[1]) Code Analysis The function decriptMe simply opens the encrypted file and return its content. The function encryptionKey generates the md5 hash of the key k given in input. The function decryption, given a key and the ciphertext, gives back the plaintext. Observe that every recovered character is added at the end of the key and is reused 32 charaters later. Noticed this, the decryption process is a simple xor, as the title of the challenge suggests. The function encryption does exactly what it is supposed to do. The only interesting part is that it uses as a key the md5 hash of the real key, then the process is the same as the decryption one. The function check checks if the file has been decrypted correctly, comparing the last 65 bytes with the last 65 bytes of the real file (as a string in the source). Here is the weakness of the cryptosystem. Attack What we have to do now is to reconstruct the original file starting from the last 65 bytes and knowing that part of these bytes are also in the key so, basically, we have to do in reverse the encryption process: def solve(): cipher = b64decode(decriptMe()) plaintext = &quot;6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e\\n&quot; key = &quot;6c81d06ac6d2709a81f76a9bf6c3f5933&quot; for i in cipher[:-len(key)]: p = ord(plaintext[-len(key)-1]) ^ ord(cipher[-len(key)-1]) plaintext = chr(p) + plaintext key = chr(p) + key return key[:32] the function returns 9dc5616a9df448ce476be9d8dd638a9c; calling the decryption function with this key and redirecting the result to a file gives a zip which, when extracted, gives a text file with the flag: {FLG:Y0yNe3dT0goD33peR!} Crypto 2 - Something is missing (200 pt.) In this challenge we are only given a file, without any explanation. The file contains some encrypted data and, using hexeditor, we can see that there are a lot of zeros at the beginning of the file. After some time the organizers gave us an hint: the file is encrypted using RSA. Since we have no informations or public key we assume that the attack does not depend on the modulus: the simpler attack is supposing that the file has been encrypted with and a very large modulus, so taking the cube root will basically give us the flag. from Crypto.Util.number import bytes_to_long from binascii import unhexlify def long_to_bytes (val, endianness=&#39;big&#39;): width = val.bit_length() width += 8 - ((width % 8) or 8) fmt = &#39;%%0%dx&#39; % (width // 4) s = unhexlify(fmt % val) if endianness == &#39;little&#39;: s = s[::-1] return s def cube_root(n): lo = 0 hi = n while lo &lt; hi: mid = (lo + hi) // 2 if mid**3 &lt; n: lo = mid + 1 else: hi = mid return lo r = open(&quot;encrypted&quot;, &quot;r&quot;).read() r_num = bytes_to_long(r) sqrt3 = cube_root(r_num) print(long_to_bytes(sqrt3)) The script returns }!Erc33Qre0Z:TYS{ :ryvs CVM rug ebs qrra hbl qebjffnc rug fv fvuG: reverting the string and decrypting with rot-13 gives the flag {FLG:M0reD33peR!}.","author":{"@type":"Person","name":"mr96"},"@type":"BlogPosting","url":"http://localhost:4000/crypto/2018/10/09/replyctfcrypto12.html","headline":"Reply CTF 2018 - Crypto1 &amp; Crypto2 Writeup","dateModified":"2018-10-09T00:00:00-04:00","datePublished":"2018-10-09T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/crypto/2018/10/09/replyctfcrypto12.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>9 October 2018</small>
+          <h1>Reply CTF 2018 - Crypto1 & Crypto2 Writeup</h1>
+            <i><p class="view">by mr96</p></i>
+
+              <h1 id="crypto1---roxor-100-pt">Crypto1 - RoXor (100 pt.)</h1>
+<p>We’re given a Python code and a file <code class="highlighter-rouge">TOP_secret.zip.enc</code></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/usr/bin/python2.7</span>
+
+<span class="kn">import</span> <span class="nn">hashlib</span><span class="p">,</span> <span class="n">base64</span><span class="p">,</span> <span class="n">sys</span>
+
+
+<span class="k">def</span> <span class="nf">decriptMe</span><span class="p">():</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">"TOP_secret.zip.enc"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">encryptionKey</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">key</span>
+
+<span class="k">def</span> <span class="nf">decryption</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">cyphertext</span><span class="p">):</span>
+    <span class="n">plaintext</span> <span class="o">=</span> <span class="s">""</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">cyphertext</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">plaintext</span> <span class="o">=</span> <span class="n">plaintext</span> <span class="o">+</span> <span class="nb">chr</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">plaintext</span>
+
+<span class="k">def</span> <span class="nf">encryption</span><span class="p">(</span><span class="n">plaintext</span><span class="p">):</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">encryptionKey</span><span class="p">(</span><span class="s">"key"</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">"[*] Key: {}</span><span class="se">\n</span><span class="s">[*] Plaintext: {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">plaintext</span><span class="p">)))</span>
+    <span class="n">cyphertext</span> <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">plaintext</span><span class="p">)):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="n">plaintext</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="n">cyphertext</span> <span class="o">=</span> <span class="n">cyphertext</span> <span class="o">+</span> <span class="nb">chr</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">+=</span> <span class="n">plaintext</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">cyphertext</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="n">plaintext</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">plaintext</span><span class="p">[</span><span class="o">-</span><span class="mi">65</span><span class="p">:]</span> <span class="o">==</span> <span class="s">"6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e</span><span class="se">\n</span><span class="s">"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+    <span class="n">enkey</span> <span class="o">=</span> <span class="n">encryptionKey</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">"[*] Key Encrypted: </span><span class="si">%</span><span class="s">s"</span> <span class="o">%</span> <span class="p">(</span><span class="n">enkey</span><span class="p">)</span>
+    <span class="n">plaintext</span> <span class="o">=</span> <span class="n">decryption</span><span class="p">(</span><span class="n">enkey</span><span class="p">,</span> <span class="n">decriptMe</span><span class="p">())</span>
+    <span class="k">print</span> <span class="n">plaintext</span><span class="p">[</span><span class="o">-</span><span class="mi">65</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="n">check</span><span class="p">(</span><span class="n">plaintext</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">"[*] Key Correct! Plaintext:</span><span class="se">\n</span><span class="s"> </span><span class="si">%</span><span class="s">s"</span> <span class="o">%</span> <span class="p">(</span><span class="n">plaintext</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">"__main__"</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">'Give me the key</span><span class="se">\n</span><span class="s"> Example: </span><span class="si">%</span><span class="s">s key'</span> <span class="o">%</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h2 id="code-analysis">Code Analysis</h2>
+<ul>
+  <li>The function <code class="highlighter-rouge">decriptMe</code> simply opens the encrypted file and return its content.</li>
+  <li>The function <code class="highlighter-rouge">encryptionKey</code> generates the md5 hash of the key <code class="highlighter-rouge">k</code> given in input.</li>
+  <li>The function <code class="highlighter-rouge">decryption</code>, given a key and the ciphertext, gives back the plaintext. Observe that every recovered character is added at the end of the key and is reused 32 charaters later. Noticed this, the decryption process is a simple xor, as the title of the challenge suggests.</li>
+  <li>The function <code class="highlighter-rouge">encryption</code> does exactly what it is supposed to do. The only interesting part is that it uses as a key the md5 hash of the real key, then the process is the same as the decryption one.</li>
+  <li>The function <code class="highlighter-rouge">check</code> checks if the file has been decrypted correctly, comparing the last 65 bytes with the last 65 bytes of the real file (as a string in the source). Here is the weakness of the cryptosystem.</li>
+</ul>
+
+<h2 id="attack">Attack</h2>
+<p>What we have to do now is to reconstruct the original file starting from the last 65 bytes and knowing that part of these bytes are also in the key so, basically, we have to do in reverse the encryption process:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def solve():
+    cipher = b64decode(decriptMe())
+    plaintext = "6c81d06ac6d2709a81f76a9bf6c3f5933002f00053302447b122260a0ac0c18e\n"
+    key = "6c81d06ac6d2709a81f76a9bf6c3f5933"
+    for i in cipher[:-len(key)]:
+        p = ord(plaintext[-len(key)-1]) ^ ord(cipher[-len(key)-1])
+        plaintext = chr(p) + plaintext
+        key = chr(p) + key
+    return key[:32]
+</code></pre></div></div>
+<p>the function returns <code class="highlighter-rouge">9dc5616a9df448ce476be9d8dd638a9c</code>; calling the decryption function with this key and redirecting the result to a file gives a zip which, when extracted, gives a text file with the flag: <code class="highlighter-rouge">{FLG:Y0yNe3dT0goD33peR!}</code></p>
+
+<h1 id="crypto-2---something-is-missing-200-pt">Crypto 2 - Something is missing (200 pt.)</h1>
+<p>In this challenge we are only given a file, without any explanation. The file contains some encrypted data and, using hexeditor, we can see that there are a lot of zeros at the beginning of the file. After some time the organizers gave us an hint: the file is encrypted using RSA. Since we have no informations or public key we assume that the attack does not depend on the modulus: the simpler attack is supposing that the file has been encrypted with <script type="math/tex">e=3</script> and a very large modulus, so taking the cube root will basically give us the flag.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from Crypto.Util.number import bytes_to_long
+from binascii import unhexlify
+
+def long_to_bytes (val, endianness='big'):
+    width = val.bit_length()
+    width += 8 - ((width % 8) or 8)
+    fmt = '%%0%dx' % (width // 4)
+    s = unhexlify(fmt % val)
+    if endianness == 'little':
+        s = s[::-1]
+    return s
+
+def cube_root(n):
+    lo = 0
+    hi = n
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if mid**3 &lt; n:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+r = open("encrypted", "r").read()
+r_num = bytes_to_long(r)
+sqrt3 = cube_root(r_num)
+print(long_to_bytes(sqrt3))
+</code></pre></div></div>
+<p>The script returns <code class="highlighter-rouge">}!Erc33Qre0Z:TYS{ :ryvs CVM rug ebs qrra hbl qebjffnc rug fv fvuG</code>: reverting the string and decrypting with <code class="highlighter-rouge">rot-13</code> gives the flag <code class="highlighter-rouge">{FLG:M0reD33peR!}</code>.</p>
+
+
+              
+                <!--<small>tags: crypto, rsa, xor, rot-13, and classic</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/crypto"><code class="highligher-rouge"><nobr>crypto</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/rsa"><code class="highligher-rouge"><nobr>rsa</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/xor"><code class="highligher-rouge"><nobr>xor</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/rot-13"><code class="highligher-rouge"><nobr>rot-13</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/classic"><code class="highligher-rouge"><nobr>classic</nobr></code></a>&nbsp;
+                  
+                </small>
+              

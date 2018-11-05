@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>DefCamp CTF Qualification 2018 - Broken TV Writeup | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="DefCamp CTF Qualification 2018 - Broken TV Writeup" />
+<meta name="author" content="matpro98" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The challenge gives us this image:" />
+<meta property="og:description" content="The challenge gives us this image:" />
+<link rel="canonical" href="http://localhost:4000/misc/2018/09/28/dctfbrokentv.html" />
+<meta property="og:url" content="http://localhost:4000/misc/2018/09/28/dctfbrokentv.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-09-28T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"The challenge gives us this image:","author":{"@type":"Person","name":"matpro98"},"@type":"BlogPosting","url":"http://localhost:4000/misc/2018/09/28/dctfbrokentv.html","headline":"DefCamp CTF Qualification 2018 - Broken TV Writeup","dateModified":"2018-09-28T00:00:00-04:00","datePublished":"2018-09-28T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/misc/2018/09/28/dctfbrokentv.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>28 September 2018</small>
+          <h1>DefCamp CTF Qualification 2018 - Broken TV Writeup</h1>
+            <i><p class="view">by matpro98</p></i>
+
+              <p>The challenge gives us this image:</p>
+
+<p><img src="/media/images/dctfbrokentv_1.png" alt="AltText" /></p>
+
+<p>Watching in detail the pixels, we can convince ourselves that the image is simply shifted by rows.</p>
+
+<p>We start by isolating the display (in Python):</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from PIL import Image
+
+im=Image.open('dctfbrokentv_1.png')
+im=im.crop((446,330,1379,838))
+im.save('dctfbrokentv_2.png')
+</code></pre></div></div>
+
+<p>The code returns this image:</p>
+
+<p><img src="/media/images/dctfbrokentv_2.png" alt="AltText" /></p>
+
+<p>Now, let’s start guessing the rows to shift and how much we have to shift them. After a few attempts, we find the flag:</p>
+
+<p><img src="/media/images/dctfbrokentv_3.png" alt="AltText" /></p>
+
+<p>The code is the following:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from PIL import Image
+
+def roll(image, delta,y):
+    xsize, ysize = image.size
+    ysize=y
+    delta = delta % xsize
+    if delta == 0: return image
+    part1 = image.crop((0, ysize, delta, ysize+1))
+    part2 = image.crop((delta, ysize, xsize, ysize+1))
+    image.paste(part2, (0, ysize, xsize-delta, ysize+1))
+    image.paste(part1, (xsize-delta, ysize, xsize, ysize+1))
+    return image
+
+shift=[0]
+for i in range(506):
+    shift.append(0)
+
+shift[236]=560
+shift[238]=222
+shift[239]=490
+shift[240]=379
+shift[241]=490
+shift[242]=111
+shift[243]=712
+shift[244]=560
+
+im=Image.open('dctfbrokentv_2.png')
+for i in range(507):
+    roll(im,shift[i],i)
+
+im=im.convert('RGB')
+im.save('dctfbrokentv_3.png')
+</code></pre></div></div>
+
+<p>DCTF{1e20cabc8098b16cfeefb05af0a9032bb953871d6d627e7f88b81d1a3c5fa809}</p>
+
+
+              
+                <!--<small>tags: steganography, D-CTF, and misc</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/steganography"><code class="highligher-rouge"><nobr>steganography</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/D-CTF"><code class="highligher-rouge"><nobr>D-CTF</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/misc"><code class="highligher-rouge"><nobr>misc</nobr></code></a>&nbsp;
+                  
+                </small>
+              

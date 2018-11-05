@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>PicoCTF 2018 - Radix’s Terminal WriteUp | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="PicoCTF 2018 - Radix’s Terminal WriteUp" />
+<meta name="author" content="XxcoralloxX" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Here we have another reverse challenge:" />
+<meta property="og:description" content="Here we have another reverse challenge:" />
+<link rel="canonical" href="http://localhost:4000/reverse/2018/10/18/PicoCTF2018-radixsTerminal.html" />
+<meta property="og:url" content="http://localhost:4000/reverse/2018/10/18/PicoCTF2018-radixsTerminal.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-10-18T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"Here we have another reverse challenge:","author":{"@type":"Person","name":"XxcoralloxX"},"@type":"BlogPosting","url":"http://localhost:4000/reverse/2018/10/18/PicoCTF2018-radixsTerminal.html","headline":"PicoCTF 2018 - Radix’s Terminal WriteUp","dateModified":"2018-10-18T00:00:00-04:00","datePublished":"2018-10-18T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/reverse/2018/10/18/PicoCTF2018-radixsTerminal.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>18 October 2018</small>
+          <h1>PicoCTF 2018 - Radix's Terminal WriteUp</h1>
+            <i><p class="view">by XxcoralloxX</p></i>
+
+              <p>Here we have another reverse challenge:</p>
+
+<p><img src="https://i.gyazo.com/ab17f08ce0d886c624c7cfa242195f52.png" alt="AltText" /></p>
+
+<p>Let’s see inside this:</p>
+
+<p>This part is simple, there are 3 branches, one for the “missing password”, one for the “wrong password” and the last for “correct password”.</p>
+
+<p><img src="https://i.gyazo.com/df975a2c9d131b8235557366f4a489d2.png" alt="AltText" /></p>
+
+<p>Notice when we take this last branch seems that the flag isn’t actually printed, but only a message with “So where is my flag?”
+That’s probably mean that the flag is the password itself.</p>
+
+<h3 id="check-password">check password</h3>
+
+<p>This function isn’t really easy to reverse, but let’s have a look slowly:</p>
+
+<p>in the first block we notice that the password is measured with a strlen:</p>
+
+<p><img src="https://i.gyazo.com/b7b23f1131fea175dcc0d72829100c35.png" alt="AltText" /></p>
+
+<p>Next, we have a bifurcation which is basically a for loop on the password length.</p>
+
+<p>Isn’t easy to follow, but here we can see that 3 chars of the password are taken:
+<img src="https://i.gyazo.com/b5e3af3b56a7c323b54a7f58e6d104b6.png" alt="AltText" />
+<img src="https://i.gyazo.com/0e8ec4cc908641730815d01d32692e3d.png" alt="AltText" /></p>
+
+<p>Whit those 3 chars (var14 is the last char taken from the password ) some operations are performed:</p>
+
+<p>Focus first on the yellow part</p>
+
+<p><img src="https://i.gyazo.com/88360dac833890e6b87ad360503a38b1.png" alt="AltText" /></p>
+
+<p>What it does is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>resoult(ebp+var_10) = (char2 &lt;&lt; 8) + (char1 &lt;&lt; 16) + char3;
+</code></pre></div></div>
+
+<p>Next, we have some similar code repeated x4 times with only a small change on the shift (shr instructions):</p>
+
+<p><img src="https://i.gyazo.com/13cdf84616031dc2320589be4a67e114.png" alt="AltText" /></p>
+
+<p>Seems that it is doing:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pass[j++] = alph[(resoult &gt;&gt; 18) &amp; 0x3F];
+pass[j++] = alph[(resoult &gt;&gt; 12) &amp; 0x3F];
+pass[j++] = alph[(resoult &gt;&gt; 6) &amp; 0x3F];
+pass[j++] = alph[resoult &amp; 0x3F];
+</code></pre></div></div>
+
+<p>alphabet is just a string of some chars (67):</p>
+
+<p><img src="https://i.gyazo.com/8838d3e9e7f70ab60f949862b4916c4f.png" alt="AltText" /></p>
+
+<h2 id="we-are-close">we are close</h2>
+
+<p>after this for we see a strcmp:</p>
+
+<p><img src="https://i.gyazo.com/7df4eb3d532c857e96a596eb198ed8c5.png" alt="AltText" /></p>
+
+<p>so here what’s happening here:
+for every 3 chars of the password, 4 chars of a new string are generated.
+This new string is compared to a fixed one, and if are equal we get a win.</p>
+
+<h2 id="the-vulnerability">The vulnerability?</h2>
+
+<p>The vulnerability here is that even if it is a 14 chars long password, we can “check” if it is right splitting it into groups of 4 since every group isn’t “correlated” whit the next.</p>
+
+<p>That’s mean that a brute force has to check only (67^4)x4 possible combinations instead of 67^14.</p>
+
+<p>We now put down some code to do this:</p>
+
+<p><img src="https://i.gyazo.com/3dbda86326de3f6176707f373471c8df.png" alt="AltText" /></p>
+
+<p>and here is the flag:</p>
+
+<p>picoCTF{bAsE_64_eNCoDiNg_iS_EAsY_195***83}</p>
+
+<p>Whait.. what? base64… oh.. well nevermind…</p>
+
+<p>XxcoralloxX</p>
+
+
+              
+                <!--<small>tags: reverse and PicoCTF2018</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/reverse"><code class="highligher-rouge"><nobr>reverse</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/PicoCTF2018"><code class="highligher-rouge"><nobr>PicoCTF2018</nobr></code></a>&nbsp;
+                  
+                </small>
+              

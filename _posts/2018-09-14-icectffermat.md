@@ -3,7 +3,7 @@ layout: post
 title: IceCTF 2018 - Fermat string Writeup
 author: madt1m
 category: pwn
-tags: [binary-exploitation, writeup, icectf]
+tags: pwn binary-exploitation writeup icectf
 ---
 
 # Does size matter?

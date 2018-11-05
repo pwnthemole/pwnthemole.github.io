@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=fef3046fa7cbcffa1c4e195e5cae8f0beef0d90d">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>noxCTF 2018 - Att3nti0n Writeup | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="noxCTF 2018 - Att3nti0n Writeup" />
+<meta name="author" content="XxcoralloxX" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This is a windows executable, let’s start looking at what it does." />
+<meta property="og:description" content="This is a windows executable, let’s start looking at what it does." />
+<link rel="canonical" href="http://localhost:4000/reverse/2018/09/20/noxCTF2018-Att3nti0n.html" />
+<meta property="og:url" content="http://localhost:4000/reverse/2018/09/20/noxCTF2018-Att3nti0n.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-09-20T00:00:00-04:00" />
+<script type="application/ld+json">
+{"description":"This is a windows executable, let’s start looking at what it does.","author":{"@type":"Person","name":"XxcoralloxX"},"@type":"BlogPosting","url":"http://localhost:4000/reverse/2018/09/20/noxCTF2018-Att3nti0n.html","headline":"noxCTF 2018 - Att3nti0n Writeup","dateModified":"2018-09-20T00:00:00-04:00","datePublished":"2018-09-20T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/reverse/2018/09/20/noxCTF2018-Att3nti0n.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/pwnthemole" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" style="color:#b5e853">about us</a> and how to <a href="/join.html" style="color:#b5e853">join us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>20 September 2018</small>
+          <h1>noxCTF 2018 - Att3nti0n Writeup</h1>
+            <i><p class="view">by XxcoralloxX</p></i>
+
+              <p>This is a windows executable, let’s start looking at what it does.</p>
+
+<p><img src="https://i.gyazo.com/52c38436a74c957e4492aa92a085aa50.png" alt="AltText" /></p>
+
+<p>So, it looks like a key-checker, let’s see what IDA think about it.</p>
+
+<h2 id="lets-investigate">Let’s investigate</h2>
+
+<p>Here we have the main. As usual, on the left, the program ends if there aren’t enough arguments (1).
+On the right, the function <em>Y2hlY2tLZXk</em> it’s called, to check our input. Very standard.
+<img src="https://i.gyazo.com/5471b2db0f9ec8d7b50f1f5019accaff.png" alt="AltText" /></p>
+
+<p>Now, let’s have a look at the check function, conveniently renamed.</p>
+
+<h3 id="the-check-function">The check function?</h3>
+<p>Here, we note that the function is recursive</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>test al, al
+...
+add     [ebp+arg_0], 1
+mov     eax, [ebp+arg_0]
+mov     [esp], eax
+call    CheckFun
+
+</code></pre></div></div>
+
+<p>checks if we are at the end of the string, if yes, it returns,</p>
+
+<p>else it calls itself adding 1 at the address of the string (the next char).
+<img src="https://i.gyazo.com/26094e45a6e2e52ea5b0785fe19e347a.png" alt="AltText" /></p>
+
+<p>Ok, but what it does?
+there’s a bigger block of instruction which is the main part of the function, we need to take a closer look. Slowly.</p>
+
+<p><img src="https://i.gyazo.com/db6e993f544278f52646e954f71ab54a.png" alt="AltText" />
+Here what’s going on:</p>
+
+<p>I’m going to name</p>
+
+<p>“Key” the password provided by the user (which is ebp+arg_0)</p>
+
+<p>“Mask” the string contained in the variable <em>a2V5QXJy</em></p>
+
+<p>“checkString” the string contained in the variable _c29tZUtleQ__</p>
+
+<p>1 - 2) The address Key is moved to EAX, then it’s value is moved to ECX.</p>
+
+<p>3) The index variable i is moved into EAX.</p>
+
+<p>4) a logic and between EAX (index i) and 3 is performed. The result will be the 3 lower bits of EAX (i % 3)</p>
+
+<p>5) Mask[i%3] moved into EAX</p>
+
+<p>6) EAX XOR with our Key (remember that this function is recursive, here we have 1 char of our Key).</p>
+
+<p>6.5) This result is moved into EDX</p>
+
+<p>7-8-9-10) checkString[i] moved into EAX</p>
+
+<p>11) taking lower part of EAX</p>
+
+<p>12) comparing it with EDX ( the result of Key[i] XOR MASK[i%3]).</p>
+
+<p>Long story short, this kind of check is made:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for(i=0;i&lt;Len;i++){
+if(Key[i]^Mask[i%3]!=checkString[i]){
+exit()
+}
+}
+</code></pre></div></div>
+
+<p>okay, we can fairly easily find which is the right key doing this operation in the opposite way, we only need:</p>
+
+<p>the mask:</p>
+
+<p><img src="https://i.gyazo.com/caf8968ff1dbf8a78cf6638fb485c9a8.png" alt="AltText" /></p>
+
+<p>the checkString:</p>
+
+<p><img src="https://i.gyazo.com/ede9b833217bd89f51c57ed2283cce10.png" alt="AltText" /></p>
+
+<p>and a few lines of C to perform that XOR.</p>
+
+<p><img src="https://i.gyazo.com/2f846c3e32df95a28e70cb03e9786a76.png" alt="AltText" /></p>
+
+<p>And voilà, easy peas… oh.. no…</p>
+
+<p><img src="https://i.gyazo.com/a743d1ecb027fd6b9fd978776c781a94.png" alt="AltText" /></p>
+
+<h2 id="the-cake-was-a-lie">The Cake was a lie</h2>
+<p>Ok, a big breath and let’s start again..
+Looking at the rest of the program, we can find another function: <em>c2VjcmV0RnVuY3Rpb24</em>
+and this is it:</p>
+
+<p>Several bytes are moved into two “Strings maybe?”</p>
+
+<p><img src="https://i.gyazo.com/833ea702146f82e6589284dd8d94446c.png" alt="AltText" /></p>
+
+<p>Some of them are “checked”, and if all the checks are correct, some memory is allocated:
+<img src="https://i.gyazo.com/2cee36b50559b3bb447bab8855c38d3c.png" alt="AltText" /></p>
+
+<p>Then a for through one of the two string is performed (on the right) and on the left, we can see “Your flag is %s”.</p>
+
+<p><img src="https://i.gyazo.com/5872499ed8643455a7e698f5412db80a.png" alt="AltText" /></p>
+
+<p>Okay okay, so let’s patch the program, we want it to call this function, instead of the “Fake check”.</p>
+
+<p><img src="https://i.gyazo.com/372a96536a8e9b2843553507c53374ad.png" alt="AltText" /></p>
+
+<p>Still not working.
+Debugging with gdb we can see that some checks fail.
+Let’s have a look at them:
+<img src="https://i.gyazo.com/2ade687de71ca37f7f372d474ea1f7d6.png" alt="AltText" /></p>
+
+<p>They are quite simple, but strange, the value inside that memory address is moved only once and never used before the check. So it seems deliberately wrong. (???)</p>
+
+<p><img src="https://i.gyazo.com/63ff8d1fea7494b2ce6257b0ed1cadb3.png" alt="AltText" /></p>
+
+<p>Then what about trying to patch them? I’m going to change that 4 bytes to the value they should be.</p>
+
+<p><img src="https://i.gyazo.com/3e58af4f21fece2133d05cf298378197.png" alt="AltText" /></p>
+
+<p>And run it… oh.. we broke it?
+<img src="https://i.gyazo.com/12c822ed19e0beb20e7f9163a201be47.png" alt="AltText" /></p>
+
+<h2 id="losing-hope">Losing hope</h2>
+<p>Ok.. let’s see with gdb..
+At some point, after the for loop, but before the printf of the flag, a call to EAX is performed..
+<img src="https://i.gyazo.com/25e5dc70305a696779aca2b46c556688.png" alt="AltText" /></p>
+
+<p>But these instructions seem too strange, maybe they are wrong?
+Well
+Push Ebp
+Mov Ebp, Esp
+it’s quite common after a call.. maybe this first part is correct?
+Looking back to ida, we can have a better look at that call.
+the address is lpAddress which is the memory allocated after the check..</p>
+
+<h1 id="lets-put-on-our-thinking-caps">Let’s put on our thinking caps</h1>
+<p>Remember the “fake function”?
+Ok, it uses a mask of 4 bytes to decode some data.
+which is interesting, since we also patched 4 bytes to make the program proceeds..</p>
+
+<p>the old values was:
+0x46 0xbe 0x96 0x51</p>
+
+<p>the new is:
+0x55 0x89 0xe5 0x60</p>
+
+<p>a xor between those 4 gives us:
+0x13,0x37,0x73,0x31
+which is the Mask of the fake function!</p>
+
+<h2 id="at-last">At last</h2>
+
+<p>Now we do what we did in the fake function, let’s take all the bytes from the second string (the one executed by the call).
+and use the script made for the old function</p>
+
+<p><img src="https://i.gyazo.com/559e1a39965980c43889df363540e6fa.png" alt="AltText" /></p>
+
+<p>And our output is:
+55 89 e5 60 31 c0 be 44 33 22 11 bf dd cc bb aa ac 84 c0 74 5 34 17 aa eb f6 61 89 ec 5d c3</p>
+
+<p>(Spoiler c3 is a return, great!)</p>
+
+<h2 id="one-last-effort">One last effort</h2>
+<p>Now we patch all the bytes and running the program one last time we get:</p>
+
+<p><img src="https://i.gyazo.com/c794f3fb910a0950db961e08270d9a4e.png" alt="AltText" /></p>
+
+<p>A nice challenge imho :D</p>
+
+<p>XxcoralloxX</p>
+
+
+              
+                <!--<small>tags: reverse, windows, and noxCTF2018</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/reverse"><code class="highligher-rouge"><nobr>reverse</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/windows"><code class="highligher-rouge"><nobr>windows</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/noxCTF2018"><code class="highligher-rouge"><nobr>noxCTF2018</nobr></code></a>&nbsp;
+                  
+                </small>
+              
