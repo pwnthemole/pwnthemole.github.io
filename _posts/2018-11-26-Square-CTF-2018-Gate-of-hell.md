@@ -2,7 +2,7 @@
 title: Square CTF 2018 - Gates of hells WriteUp
 layout: post
 author: "XxcoralloxX"
-tags: reverse Square_CTF_2018
+tags: reverse SquareCTF2018
 category: reverse
 ---
 
