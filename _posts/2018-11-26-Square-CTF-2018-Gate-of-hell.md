@@ -2,7 +2,7 @@
 title: Square CTF 2018 - Gates of hells WriteUp
 layout: post
 author: "XxcoralloxX"
-tags: reverse TuCTF
+tags: reverse Square_CTF_2018
 category: reverse
 ---
 
@@ -34,19 +34,19 @@ we can find this function
 
 which is a system call to a print. (which is probably our win function).
 
-as we can see this function will be called if Ebx will be equal at 0x29A (666)
+as we can see this function will be called if *ebx* will be equal at 0x29A (666)
 
 ![AltText](https://i.gyazo.com/2a1b7c5acdbae962b70f390a357e44ab.png)
 
 Otherwise, it will just exit
 
-Ok, we need to understand how to make Ebx become equal to 0x29A.
+Ok, we need to understand how to make *ebx* become equal to 0x29A.
 
 Now we follow the code flow after the argument check: 
 
 ![AltText](https://i.gyazo.com/5645119bdb54ef348315de0916e6cbbe.png)
 
-A function is called and the value of **Ebx which start with 0x25** is stored into the stack and retrieved after the function.
+A function is called and the value of **ebx which start with 0x25** is stored into the stack and retrieved after the function.
 We should investigate this function.
 
 This is the function
@@ -87,19 +87,19 @@ looking at the entirety of the code we can understand better what it does.
 
 1) The previous function is called, its value will be stored in EAX
 2) The result of the function is "stored" in the stack and some strange operations are performed, we will look at that later, after this the value of EAX is retrieved. 
-3) If those "strange operation" menage to set the sign flag, ebx will be set to 0
+3) If those "strange operation" menage to set the sign flag, *ebx* will be set to 0
 4) eax (the result of the function) is used as index of a vector, the content of v[eax] is moved into al (lower part of eax of 1 byte)
-5) A mul is performed, so it will exec ebx * vet[eax] 
-6) the result is stored into ebx again.
+5) A mul is performed, so it will exec ```ebx * vet[eax] ```
+6) the result is stored into *ebx* again.
 7) Here ecx is set at 100. at the instruction n. 10 we can see a loop, so the instruction between point 7 and 10 repeats 100 times.
 8) vet2[i] (where 'i' is ecx) is moved into al, and his value will be decreased.
 9) if the result will be >= 0 al will be stored back into vet2[i].
 10) end of the first loop
 11) this an external loop, which loops for 15 times, one for every argument.
 
-So, we want ebx to become equal to 0x29A.
+So, we want *ebx* to become equal to 0x29A.
 it starts with 0x25.
-For every cycle ebx = ebx * vet[eax]  (where eax is the return value of our first function).
+For every cycle ```ebx = ebx * vet[eax]```  (where eax is the return value of our first function).
 And, after that, all the value of vet will decrease by 1
 Ok, we are close.
 
@@ -107,16 +107,18 @@ Now we want to:
 
 1) Create some code that giving the index needed return to us the argument to provide as input  (reverse the first function)
 
-2) have a better look at the instruction at point 3) which could make ebx to reset (and we will lose)
+2) have a better look at the instruction at point 3) which could make *ebx* to reset (and we will lose)
 
-3) Choose the index of the vector, so that their product will be equal to 18 (since ebx start to 37 (0x25) 37*18 = 666 (0x29A))
+3) Choose the index of the vector, so that their product will be equal to 18 (since *ebx* start to 37 (0x25) 37*18 = 666 (0x29A))
 
 
 ## Task 1
 The first task is quite easy.
 
 Since 
+```
 resoult=(ch1-0x30)*0xa+(ch2-0x30); 
+```
 
 we can write a simple code that could find the correct value of ch1 and ch2 giving a result.
 
@@ -125,7 +127,7 @@ we can write a simple code that could find the correct value of ch1 and ch2 givi
 
 ## Task 2
 
-Now we want to avoid that ebx will be reset.
+Now we want to avoid that *ebx* will be reset.
 In order to do that we want eax be such that 
 ```
 aam     12h
@@ -188,7 +190,7 @@ If we esclude the bad index from provided by the script of the task 2 we get:
 0x804812a:	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 ```
 
-Now we could wrote a script that chose the right value to make ebx equal to 0x29A
+Now we could wrote a script that chose the right value to make *ebx* equal to 0x29A
 But in our case @matpro98 found by hand one solution:
 
 The index where:
