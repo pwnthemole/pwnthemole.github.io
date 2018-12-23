@@ -19,7 +19,7 @@ Rules:
 ((())) + (())(()) = ((())(())(()))                  => [absorb-combined-left]
 () + (()) + ((())) = (()()) + ((())) = ((()())(())) => [left-associative]
 
-Example: 
+Example:
 (()) + () = () + (()) = (()())
 
 Let's start with a warmup.
