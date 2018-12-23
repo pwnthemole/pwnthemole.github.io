@@ -18,7 +18,7 @@ The only thing we can do, for starters, is to interact with the service to find 
 
 With a few tries, we quickly understand that the program works like some sort of file retriever:
 
-![Alt](/media/images/xmasforbidden1.jpg)
+![Alt](/media/images/xmasforbidden1.JPG)
 
 The first thing I asked myself concerns that "offset" option. Why did they leave me this to _decide_?
 
@@ -30,7 +30,7 @@ Long story short, I used this same service to retrieve the binary file loaded in
 
 - Retrieved the file "redir.sh" which I knew, from other challenge, was the name of the shell script dedicated to "instrument" the binary-to-service:
 
-![alt](/media/images/xmasforbidden2.jpg)
+![alt](/media/images/xmasforbidden2.JPG)
 
 Goal! We have a name!
 ...which gives us a good lead to follow in order to retrieve both the binary **AND** the libc.so object featured in the target machine - which quite always comes handy to fellow pwners :)
@@ -56,11 +56,11 @@ I had finally access to both binary and libc.
 
 All excited and thrilled for the new hunt, we analyze the binary:
 
-![alt](/media/images/xmasforbidden3.jpg)
+![alt](/media/images/xmasforbidden3.JPG)
 
 And look for some easy buffer overflow:
 
-![alt](/media/images/xmasforbidden4.jpg)
+![alt](/media/images/xmasforbidden4.JPG)
 
 Bingo! The `fread()` function delegated to read the file chunk into the stack just happily takes whatever we tell here to fill through the _size_ variable, which is assigned with the "How much should we read" question. This means that, reading a file big enough with a proper _size_ input, we can overflow the saved **EIP** in stack, gaining control of program execution.
 
@@ -89,7 +89,7 @@ Ok then, everything works here, but...how can we control the content of the buff
 
 The hint to solve this came straight from the binary, precisely:
 
-![alt](/media/images/xmasforbidden5.jpg)
+![alt](/media/images/xmasforbidden5.JPG)
 
 The check for _flag_ is obvious, but...what about STDIN?
 
