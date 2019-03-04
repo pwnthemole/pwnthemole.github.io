@@ -1,5 +1,5 @@
 ---
-title: TAMUctf - Iheard you like files Writeup
+title: TAMUctf - I heard you like files Writeup
 layout: post
 author: "matpro98"
 category: misc
