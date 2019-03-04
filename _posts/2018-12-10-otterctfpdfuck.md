@@ -10,7 +10,7 @@ tags: misc PDF
 I found some intresting PDF and file on my otter PC. take a look and see if you can get the secret message.
 
 ## Solution
-We have a PDF named `history.pdf`, let's have a look inside! The title of the file is `The Philosophy of History` from `Georg Wilhelm Friedrich Hegel`. Ugh, maybe the filosopher I like the least. But it seems simply his book. So let's try with the other file, `PCFuck.txt`.
+We have a PDF named `history.pdf`, let's have a look inside! The title of the file is `The Philosophy of History` from `Georg Wilhelm Friedrich Hegel`. Ugh, maybe the philosopher I like the least. But it seems simply his book. So let's try with the other file, `PCFuck.txt`.
 
 This time we have a file with more or less $$600$$ couples of integers. While the second number of each couple can be quite large, the first one seems smaller and a rapid check confirmed me that the max value of the first elements is less than the number of the pages in Hegel's book. So I wrote a simple Python script that extracts the letters pointed by the couples (interpreted as $$(page,letter)$$) in the txt file. Here is the script:
 
