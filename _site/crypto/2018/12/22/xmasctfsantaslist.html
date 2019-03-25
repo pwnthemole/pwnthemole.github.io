@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=bbb1c00b5f23bec9a97fab92220b494e5e94ba25">
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>X-MAS CTF 2018 - Santa’s List 1 &amp; 2 Writeup | pwnthem0le</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="X-MAS CTF 2018 - Santa’s List 1 &amp; 2 Writeup" />
+<meta name="author" content="mr96" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="These two challenge are very similar: the only difference is that in the first one we can do how many requests we want to the server, while in the second one we are limited to 5 requests. We’ll treat only the second, showing a solution that works in 4 requests. We’re given the Python code used on the server: #!/usr/bin/python3 from Crypto.PublicKey import RSA from Crypto.Util.number import * FLAG = open(&#39;flag.txt&#39;, &#39;r&#39;).read().strip() def menu():0 print() print(&#39;[1] Encrypt&#39;) print(&#39;[2] Decrypt&#39;) print(&#39;[3] Exit&#39;) return input() def encrypt(m): return pow(m, rsa.e, rsa.n) def decrypt(c): return pow(c, rsa.d, rsa.n) rsa = RSA.generate(1024) flag_encrypted = pow(bytes_to_long(FLAG.encode()), rsa.e, rsa.n) used = [bytes_to_long(FLAG.encode())] print(&#39;Ho, ho, ho and welcome back!&#39;) print(&#39;Your list for this year:\n&#39;) print(&#39;Sarah - Nice&#39;) print(&#39;Bob - Nice&#39;) print(&#39;Eve - Naughty&#39;) print(&#39;Galf - &#39; + hex(flag_encrypted)[2:]) print(&#39;Alice - Nice&#39;) print(&#39;Johnny - Naughty&#39;) for i in range(5): choice = menu() if choice == &#39;1&#39;: m = bytes_to_long(input(&#39;\nPlaintext &gt; &#39;).strip().encode()) used.append(m) print(&#39;\nEncrypted: &#39; + str(encrypt(m))) elif choice == &#39;2&#39;: c = int(input(&#39;\nCiphertext &gt; &#39;).strip()) if c == flag_encrypted: print(&#39;Ho, ho, no...&#39;) else: m = decrypt(c) for no in used: if m % no == 0: print(&#39;Ho, ho, no...&#39;) break else: print(&#39;\nDecrypted: &#39; + str(m)) elif choice == &#39;3&#39;: print(&#39;Till next time.\nMerry Christmas!&#39;) break print(&#39;Too many requests made... Disconnecting...&#39;) Code Analysis The code looks very simple, basically we’re given the encrypted flag, encrypted with a secure RSA key with the standard exponent (as it is not specified when creating the key). We can encrypt whatever we want, but we can’t decrypt things that, when decrypted, are multiples of the flag or multiples of the things we’ve encrypted. Attack The first thing is to recover the modulus : suppose we encrypt two different integers obtaining , then we have that and so , most likely with if we choose the integers such that . Once we recovered the rest is trivial: take the least prime such that it divides the decrypted flag (I’m lazy so I waited for it to be equal to 2), so we have then simply decrypt 2 to get and multiply it with the previous result to get the decimal value of the flag. Use whatever long_to_bytes function to get the string. Here’s the Python code for the attack, I did the last part by hand using the interactive mode from pwntools, the script simply recovers . from pwn import * import gmpy2 from Crypto.Util.number import * v1 = 2 v2 = 3 r = remote(&quot;199.247.6.180&quot;, 16002) r.recvuntil(&quot;Galf - &quot;) flag = int(r.recvline().decode().rstrip(&quot;\n&quot;),16) print(flag) for _ in range(6): print(r.recvline()) r.sendline(&quot;1&quot;) r.recvuntil(&quot;&gt;&quot;) r.sendline(chr(v1)) print(r.recvuntil(&quot;Encrypted: &quot;)) c1 = int(r.recvline().decode().rstrip(&quot;\n&quot;)) r.recvuntil(&quot;Exit\n&quot;) r.sendline(&quot;1&quot;) r.recvuntil(&quot;&gt;&quot;) r.sendline(chr(v2)) print(r.recvuntil(&quot;Encrypted: &quot;)) c2 = int(r.recvline().decode().rstrip(&quot;\n&quot;)) r.recvuntil(&quot;Exit\n&quot;) n = gmpy2.gcd(v2 ** 65537 - c2, v1 ** 65537 - c1) assert pow(v1, 65537, n) == c1 r.sendline(&quot;2&quot;) r.recvuntil(&quot;&gt;&quot;) assert flag % 2 == 0 to_send = flag//2 print(to_send) r.interactive() Bonus The modulus can be recovered with only one request, that is The flag can be also recovered with only one requests, but this is a little bit trickier and left to the reader :) simply notice that, with this method, we only need 2 requests!" />
+<meta property="og:description" content="These two challenge are very similar: the only difference is that in the first one we can do how many requests we want to the server, while in the second one we are limited to 5 requests. We’ll treat only the second, showing a solution that works in 4 requests. We’re given the Python code used on the server: #!/usr/bin/python3 from Crypto.PublicKey import RSA from Crypto.Util.number import * FLAG = open(&#39;flag.txt&#39;, &#39;r&#39;).read().strip() def menu():0 print() print(&#39;[1] Encrypt&#39;) print(&#39;[2] Decrypt&#39;) print(&#39;[3] Exit&#39;) return input() def encrypt(m): return pow(m, rsa.e, rsa.n) def decrypt(c): return pow(c, rsa.d, rsa.n) rsa = RSA.generate(1024) flag_encrypted = pow(bytes_to_long(FLAG.encode()), rsa.e, rsa.n) used = [bytes_to_long(FLAG.encode())] print(&#39;Ho, ho, ho and welcome back!&#39;) print(&#39;Your list for this year:\n&#39;) print(&#39;Sarah - Nice&#39;) print(&#39;Bob - Nice&#39;) print(&#39;Eve - Naughty&#39;) print(&#39;Galf - &#39; + hex(flag_encrypted)[2:]) print(&#39;Alice - Nice&#39;) print(&#39;Johnny - Naughty&#39;) for i in range(5): choice = menu() if choice == &#39;1&#39;: m = bytes_to_long(input(&#39;\nPlaintext &gt; &#39;).strip().encode()) used.append(m) print(&#39;\nEncrypted: &#39; + str(encrypt(m))) elif choice == &#39;2&#39;: c = int(input(&#39;\nCiphertext &gt; &#39;).strip()) if c == flag_encrypted: print(&#39;Ho, ho, no...&#39;) else: m = decrypt(c) for no in used: if m % no == 0: print(&#39;Ho, ho, no...&#39;) break else: print(&#39;\nDecrypted: &#39; + str(m)) elif choice == &#39;3&#39;: print(&#39;Till next time.\nMerry Christmas!&#39;) break print(&#39;Too many requests made... Disconnecting...&#39;) Code Analysis The code looks very simple, basically we’re given the encrypted flag, encrypted with a secure RSA key with the standard exponent (as it is not specified when creating the key). We can encrypt whatever we want, but we can’t decrypt things that, when decrypted, are multiples of the flag or multiples of the things we’ve encrypted. Attack The first thing is to recover the modulus : suppose we encrypt two different integers obtaining , then we have that and so , most likely with if we choose the integers such that . Once we recovered the rest is trivial: take the least prime such that it divides the decrypted flag (I’m lazy so I waited for it to be equal to 2), so we have then simply decrypt 2 to get and multiply it with the previous result to get the decimal value of the flag. Use whatever long_to_bytes function to get the string. Here’s the Python code for the attack, I did the last part by hand using the interactive mode from pwntools, the script simply recovers . from pwn import * import gmpy2 from Crypto.Util.number import * v1 = 2 v2 = 3 r = remote(&quot;199.247.6.180&quot;, 16002) r.recvuntil(&quot;Galf - &quot;) flag = int(r.recvline().decode().rstrip(&quot;\n&quot;),16) print(flag) for _ in range(6): print(r.recvline()) r.sendline(&quot;1&quot;) r.recvuntil(&quot;&gt;&quot;) r.sendline(chr(v1)) print(r.recvuntil(&quot;Encrypted: &quot;)) c1 = int(r.recvline().decode().rstrip(&quot;\n&quot;)) r.recvuntil(&quot;Exit\n&quot;) r.sendline(&quot;1&quot;) r.recvuntil(&quot;&gt;&quot;) r.sendline(chr(v2)) print(r.recvuntil(&quot;Encrypted: &quot;)) c2 = int(r.recvline().decode().rstrip(&quot;\n&quot;)) r.recvuntil(&quot;Exit\n&quot;) n = gmpy2.gcd(v2 ** 65537 - c2, v1 ** 65537 - c1) assert pow(v1, 65537, n) == c1 r.sendline(&quot;2&quot;) r.recvuntil(&quot;&gt;&quot;) assert flag % 2 == 0 to_send = flag//2 print(to_send) r.interactive() Bonus The modulus can be recovered with only one request, that is The flag can be also recovered with only one requests, but this is a little bit trickier and left to the reader :) simply notice that, with this method, we only need 2 requests!" />
+<link rel="canonical" href="http://localhost:4000/crypto/2018/12/22/xmasctfsantaslist.html" />
+<meta property="og:url" content="http://localhost:4000/crypto/2018/12/22/xmasctfsantaslist.html" />
+<meta property="og:site_name" content="pwnthem0le" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-12-22T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"These two challenge are very similar: the only difference is that in the first one we can do how many requests we want to the server, while in the second one we are limited to 5 requests. We’ll treat only the second, showing a solution that works in 4 requests. We’re given the Python code used on the server: #!/usr/bin/python3 from Crypto.PublicKey import RSA from Crypto.Util.number import * FLAG = open(&#39;flag.txt&#39;, &#39;r&#39;).read().strip() def menu():0 print() print(&#39;[1] Encrypt&#39;) print(&#39;[2] Decrypt&#39;) print(&#39;[3] Exit&#39;) return input() def encrypt(m): return pow(m, rsa.e, rsa.n) def decrypt(c): return pow(c, rsa.d, rsa.n) rsa = RSA.generate(1024) flag_encrypted = pow(bytes_to_long(FLAG.encode()), rsa.e, rsa.n) used = [bytes_to_long(FLAG.encode())] print(&#39;Ho, ho, ho and welcome back!&#39;) print(&#39;Your list for this year:\\n&#39;) print(&#39;Sarah - Nice&#39;) print(&#39;Bob - Nice&#39;) print(&#39;Eve - Naughty&#39;) print(&#39;Galf - &#39; + hex(flag_encrypted)[2:]) print(&#39;Alice - Nice&#39;) print(&#39;Johnny - Naughty&#39;) for i in range(5): choice = menu() if choice == &#39;1&#39;: m = bytes_to_long(input(&#39;\\nPlaintext &gt; &#39;).strip().encode()) used.append(m) print(&#39;\\nEncrypted: &#39; + str(encrypt(m))) elif choice == &#39;2&#39;: c = int(input(&#39;\\nCiphertext &gt; &#39;).strip()) if c == flag_encrypted: print(&#39;Ho, ho, no...&#39;) else: m = decrypt(c) for no in used: if m % no == 0: print(&#39;Ho, ho, no...&#39;) break else: print(&#39;\\nDecrypted: &#39; + str(m)) elif choice == &#39;3&#39;: print(&#39;Till next time.\\nMerry Christmas!&#39;) break print(&#39;Too many requests made... Disconnecting...&#39;) Code Analysis The code looks very simple, basically we’re given the encrypted flag, encrypted with a secure RSA key with the standard exponent (as it is not specified when creating the key). We can encrypt whatever we want, but we can’t decrypt things that, when decrypted, are multiples of the flag or multiples of the things we’ve encrypted. Attack The first thing is to recover the modulus : suppose we encrypt two different integers obtaining , then we have that and so , most likely with if we choose the integers such that . Once we recovered the rest is trivial: take the least prime such that it divides the decrypted flag (I’m lazy so I waited for it to be equal to 2), so we have then simply decrypt 2 to get and multiply it with the previous result to get the decimal value of the flag. Use whatever long_to_bytes function to get the string. Here’s the Python code for the attack, I did the last part by hand using the interactive mode from pwntools, the script simply recovers . from pwn import * import gmpy2 from Crypto.Util.number import * v1 = 2 v2 = 3 r = remote(&quot;199.247.6.180&quot;, 16002) r.recvuntil(&quot;Galf - &quot;) flag = int(r.recvline().decode().rstrip(&quot;\\n&quot;),16) print(flag) for _ in range(6): print(r.recvline()) r.sendline(&quot;1&quot;) r.recvuntil(&quot;&gt;&quot;) r.sendline(chr(v1)) print(r.recvuntil(&quot;Encrypted: &quot;)) c1 = int(r.recvline().decode().rstrip(&quot;\\n&quot;)) r.recvuntil(&quot;Exit\\n&quot;) r.sendline(&quot;1&quot;) r.recvuntil(&quot;&gt;&quot;) r.sendline(chr(v2)) print(r.recvuntil(&quot;Encrypted: &quot;)) c2 = int(r.recvline().decode().rstrip(&quot;\\n&quot;)) r.recvuntil(&quot;Exit\\n&quot;) n = gmpy2.gcd(v2 ** 65537 - c2, v1 ** 65537 - c1) assert pow(v1, 65537, n) == c1 r.sendline(&quot;2&quot;) r.recvuntil(&quot;&gt;&quot;) assert flag % 2 == 0 to_send = flag//2 print(to_send) r.interactive() Bonus The modulus can be recovered with only one request, that is The flag can be also recovered with only one requests, but this is a little bit trickier and left to the reader :) simply notice that, with this method, we only need 2 requests!","author":{"@type":"Person","name":"mr96"},"@type":"BlogPosting","url":"http://localhost:4000/crypto/2018/12/22/xmasctfsantaslist.html","headline":"X-MAS CTF 2018 - Santa’s List 1 &amp; 2 Writeup","dateModified":"2018-12-22T00:00:00-05:00","datePublished":"2018-12-22T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/crypto/2018/12/22/xmasctfsantaslist.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+    <body>
+      <header>
+  <div class="container">
+    <center>
+      <h1>pwnthem0le</h1>
+      <section id="downloads">
+        <a href="/index.html" class="btn btn-github">Home</a>
+        <a href="/blog/index.html" class="btn btn-github">Blog</a>
+        <a href="/about.html" class="btn btn-github">About</a>
+        <a href="http://github.com/mr-96" class="btn btn-github"><span class="icon"></span>GitHub</a>
+      </section>
+      <h2>pwnthem0le is a Turin-based, hacking students group born out of CyberChallenge 2018. Read more <a href="/about.html" class="hyperlink-color">about us</a>!
+</h2>
+    </center>
+  </div>
+</header>
+
+
+      <div class="container">
+        <small>22 December 2018</small>
+          <h1>X-MAS CTF 2018 - Santa's List 1 & 2 Writeup</h1>
+            <i><p class="view">by mr96</p></i>
+
+              <p>These two challenge are very similar: the only difference is that in the first one we can do how many requests we want to the server, while in the second one we are limited to 5 requests. We’ll treat only the second, showing a solution that works in 4 requests.<br />
+We’re given the Python code used on the server:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/usr/bin/python3</span>
+<span class="kn">from</span> <span class="nn">Crypto.PublicKey</span> <span class="kn">import</span> <span class="n">RSA</span>
+<span class="kn">from</span> <span class="nn">Crypto.Util.number</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">FLAG</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">'flag.txt'</span><span class="p">,</span> <span class="s">'r'</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">menu</span><span class="p">():</span><span class="mi">0</span>
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'[1] Encrypt'</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'[2] Decrypt'</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'[3] Exit'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">input</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">pow</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">rsa</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">rsa</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">pow</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">rsa</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="n">rsa</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+
+
+<span class="n">rsa</span> <span class="o">=</span> <span class="n">RSA</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">flag_encrypted</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="n">bytes_to_long</span><span class="p">(</span><span class="n">FLAG</span><span class="o">.</span><span class="n">encode</span><span class="p">()),</span> <span class="n">rsa</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">rsa</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+<span class="n">used</span> <span class="o">=</span> <span class="p">[</span><span class="n">bytes_to_long</span><span class="p">(</span><span class="n">FLAG</span><span class="o">.</span><span class="n">encode</span><span class="p">())]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'Ho, ho, ho and welcome back!'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Your list for this year:</span><span class="se">\n</span><span class="s">'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Sarah - Nice'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Bob - Nice'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Eve - Naughty'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Galf - '</span> <span class="o">+</span> <span class="nb">hex</span><span class="p">(</span><span class="n">flag_encrypted</span><span class="p">)[</span><span class="mi">2</span><span class="p">:])</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Alice - Nice'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Johnny - Naughty'</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">choice</span> <span class="o">=</span> <span class="n">menu</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">choice</span> <span class="o">==</span> <span class="s">'1'</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">bytes_to_long</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Plaintext &gt; '</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        <span class="n">used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Encrypted: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">encrypt</span><span class="p">(</span><span class="n">m</span><span class="p">)))</span>
+
+    <span class="k">elif</span> <span class="n">choice</span> <span class="o">==</span> <span class="s">'2'</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Ciphertext &gt; '</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">flag_encrypted</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">'Ho, ho, no...'</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">decrypt</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">no</span> <span class="ow">in</span> <span class="n">used</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">m</span> <span class="o">%</span> <span class="n">no</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s">'Ho, ho, no...'</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Decrypted: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">choice</span> <span class="o">==</span> <span class="s">'3'</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'Till next time.</span><span class="se">\n</span><span class="s">Merry Christmas!'</span><span class="p">)</span>
+        <span class="k">break</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'Too many requests made... Disconnecting...'</span><span class="p">)</span>
+</code></pre></div></div>
+<h2 id="code-analysis">Code Analysis</h2>
+<p>The code looks very simple, basically we’re given the encrypted flag, encrypted with a secure RSA key with the standard <script type="math/tex">e=65537</script> exponent (as it is not specified when creating the key). We can encrypt whatever we want, but we can’t decrypt things that, when decrypted, are multiples of the flag or multiples of the things we’ve encrypted.</p>
+
+<h2 id="attack">Attack</h2>
+<p>The first thing is to recover the modulus <script type="math/tex">n</script>: suppose we encrypt two different integers <script type="math/tex">x_1,x_2</script> obtaining <script type="math/tex">c_1,c_2</script>, then we have that
+<script type="math/tex">x_1^e-c_1 \equiv x_2^e-c_2 \equiv 0 \pmod{n}</script></p>
+
+<p>and so <script type="math/tex">gcd(x_1^e-c_1,x_2^e-c_2)=kn</script>, most likely with <script type="math/tex">k=1</script> if we choose the integers such that <script type="math/tex">gcd(x_1,x_2)=1</script>.</p>
+
+<p>Once we recovered <script type="math/tex">n</script> the rest is trivial: take the least prime <script type="math/tex">p</script> such that it divides the decrypted flag (I’m lazy so I waited for it to be equal to 2), so we have</p>
+
+<script type="math/tex; mode=display">D(flag\cdot 2^{-1})=flag\cdot 2^{-d}</script>
+
+<p>then simply decrypt 2 to get <script type="math/tex">D(2)=2^d</script> and multiply it with the previous result to get the decimal value of the flag. Use whatever <code class="highlighter-rouge">long_to_bytes</code> function to get the string.</p>
+
+<p>Here’s the Python code for the attack, I did the last part by hand using the interactive mode from pwntools, the script simply recovers <script type="math/tex">n</script>.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from pwn import *
+import gmpy2
+from Crypto.Util.number import *
+
+v1 = 2
+v2 = 3
+
+r = remote("199.247.6.180", 16002)
+r.recvuntil("Galf - ")
+flag = int(r.recvline().decode().rstrip("\n"),16)
+print(flag)
+for _ in range(6):
+    print(r.recvline())
+r.sendline("1")
+r.recvuntil("&gt;")
+r.sendline(chr(v1))
+print(r.recvuntil("Encrypted: "))
+c1 = int(r.recvline().decode().rstrip("\n"))
+r.recvuntil("Exit\n")
+r.sendline("1")
+r.recvuntil("&gt;")
+r.sendline(chr(v2))
+print(r.recvuntil("Encrypted: "))
+c2 = int(r.recvline().decode().rstrip("\n"))
+r.recvuntil("Exit\n")
+n = gmpy2.gcd(v2 ** 65537 - c2, v1 ** 65537 - c1)
+assert pow(v1, 65537, n) == c1
+r.sendline("2")
+r.recvuntil("&gt;")
+assert flag % 2 == 0
+to_send = flag//2
+print(to_send)
+r.interactive()
+</code></pre></div></div>
+
+<h2 id="bonus">Bonus</h2>
+<p>The modulus can be recovered with only one request, that is</p>
+
+<script type="math/tex; mode=display">D(-1)\equiv n-1 \pmod{n}.</script>
+
+<p>The flag can be also recovered with only one requests, but this is a little bit trickier and left to the reader :) simply notice that, with this method, we  only need 2 requests!</p>
+
+
+              
+                <!--<small>tags: crypto and rsa</small> -->
+                <small>
+                  tags:
+                  
+                    
+                    <a href="/tags/crypto" class="hyperlink-color"><code class="highligher-rouge"><nobr>crypto</nobr></code></a>&nbsp;
+                  
+                    
+                    <a href="/tags/rsa" class="hyperlink-color"><code class="highligher-rouge"><nobr>rsa</nobr></code></a>&nbsp;
+                  
+                </small>
+              
