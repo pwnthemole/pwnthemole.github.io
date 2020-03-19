@@ -38,20 +38,20 @@ while 1:
 		break
 ```
 
-At the beginning I was a little bit confused by the comments: usually when something is pointed to as secure, it is what you have to break; unfortunately not this time. So I spent some hours trying to factorize $n$ and to attack directly the `otp` function.
+At the beginning I was a little bit confused by the comments: usually when something is pointed to as secure, it is what you have to break; unfortunately not this time. So I spent some hours trying to factorize $$n$$ and to attack directly the `otp` function.
 Then I tried to modify one of our attempt to break `otp`: in fact it is an oracle and in particular it leaks the lenght of the decrypted message.
-The first thing to notice is that if we send to the server $c$ and $c\cdot 2^{-e} \pmod{n}$, then (calling $m$ the decrypted $c$):
-* if $m$ is even, then the second response is exactly one bit shorter then the first one
-* if $m$ is odd, the lengths of the first and second response are uncorrelated
+The first thing to notice is that if we send to the server $$c$$ and $$c\cdot 2^{-e} \pmod{n}$$, then (calling $$m$$ the decrypted $$c$$):
+* if $$m$$ is even, then the second response is exactly one bit shorter then the first one
+* if $$m$$ is odd, the lengths of the first and second response are uncorrelated
 
-Don't worry, we can still recover our flag: in fact $n$ is odd, thus if we could operate on the decrypted $m$ we ccould also change it from odd to even by adding $n$. But what happens?
-$We are working modulo $n$, so we have $m<n;\ m+n<2n;\ \dfrac{m+n}{2}<n$ and $\dfrac{m+n}{2}\equiv \dfrac{m}{2} \pmod{n}$. This means that if at some point $m$ is even, then sending $c\cdot 2^{-e} \pmod{n}$ we know the length of $\dfrac{m}{2}$, otherwise we know the length of $\dfrac{m+n}{2}.
+Don't worry, we can still recover our flag: in fact $$n$$ is odd, thus if we could operate on the decrypted $$m$$ we ccould also change it from odd to even by adding $$n$$. But what happens?
+We are working modulo $$n$$, so we have $$m<n;\ m+n<2n;\ \dfrac{m+n}{2}<n$$ and $$\dfrac{m+n}{2}\equiv \dfrac{m}{2} \pmod{n}$$. This means that if at some point $$m$$ is even, then sending $$c\cdot 2^{-e} \pmod{n}$$ we know the length of $$\dfrac{m}{2}$$, otherwise we know the length of $$\dfrac{m+n}{2}$$.
 
 We can extend the reasoning to more than one bit. Let's construct $r$ in this way:
-* send to the server the encrypted flag (let's call it $c$) and call $l_0$ the bit length of the response
-* send to the server $c\cdot 2^{-e} \pmod{n}$ and call $l_1$ the bit length of the response
-* if $l_1$ is equal to $l_0-1$, then prepend a 0 to $r$, otherwise a $1$ (we are interpreting $r$ in binary)
-* repeat these steps enough (we need $l_0$ bits)
+* send to the server the encrypted flag (let's call it $$c$$) and call $$l_0$$ the bit length of the response
+* send to the server $$c\cdot 2^{-e} \pmod{n}$$ and call $$l_1$$ the bit length of the response
+* if $$l_1$$ is equal to $$l_0-1$$, then prepend a 0 to $$r$$, otherwise a $$1$$ (we are interpreting $$r$$ in binary)
+* repeat these steps enough (we need $$l_0$$ bits)
 
-We can now notice that after $i$ steps we know the parity of $\dfrac{rn+f}{2^i}$ (let's call it $p$), so we can recover the last $i$ bits of $f$ as $p2^i-rn \pmod{2^{i+1}}$.
-That's all: we can recover all the bits of $f$, leading us to the flag `actf{this_is_not_what_i_meant_when_i_told_you_to_use_rsa_with_padding}`.
+We can now notice that after $$i$$ steps we know the parity of $$\dfrac{rn+f}{2^i}$$ (let's call it $$p$$), so we can recover the last $$i$$ bits of $$f$$ as $$p2^i-rn \pmod{2^{i+1}}$$.
+That's all: we can recover all the bits of $$f$$, leading us to the flag `actf{this_is_not_what_i_meant_when_i_told_you_to_use_rsa_with_padding}`.
